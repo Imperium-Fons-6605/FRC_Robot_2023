@@ -13,15 +13,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.WPIUtilJNI;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.Pigeon2Configuration;
 
+import frc.robot.Util.SwerveUtils;
 import frc.robot.Util.Constants.DriveConstants;
-import frc.utils.SwerveUtils;
 import frc.robot.Util.Constants.ModuleConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -52,7 +50,7 @@ public class DriveSubsystem extends SubsystemBase {
   
 
   // The gyro sensor
-  private final Pigeon2 pigeonGyro = new Pigeon2(DriveConstants.kPigeonGyroPort);
+  private final Pigeon2 pigeonGyro = new Pigeon2(DriveConstants.kPigeonGyroID);
 
   // Slew rate filter variables for controlling lateral acceleration
   private double m_currentRotation = 0.0;
@@ -83,24 +81,16 @@ public class DriveSubsystem extends SubsystemBase {
   private double currentDrivingkD = ModuleConstants.kDrivingD;
   private double currentDrivingkFF = ModuleConstants.kDrivingFF;
 
-  private ShuffleboardTab tab = Shuffleboard.getTab("TestTab");
-  private GenericEntry TurningPEntry = tab.addPersistent("TurningkP", ModuleConstants.kTurningP).getEntry();
-  private GenericEntry TurningIEntry = tab.addPersistent("TurningkI", ModuleConstants.kTurningI).getEntry();
-  private GenericEntry TurningDEntry = tab.addPersistent("TurningkD", ModuleConstants.kTurningD).getEntry();
-  private GenericEntry DrivingPEntry = tab.addPersistent("DrivingkP", ModuleConstants.kDrivingP).getEntry();
-  private GenericEntry DrivingIEntry = tab.addPersistent("DrivingkI", ModuleConstants.kDrivingI).getEntry();
-  private GenericEntry DrivingDEntry = tab.addPersistent("DrivingkD", ModuleConstants.kDrivingD).getEntry();
-  private GenericEntry DrivingFFEntry = tab.addPersistent("DrivingkFF", ModuleConstants.kDrivingFF).getEntry();
-  private GenericEntry SwerveAngleEntry = tab.add("SwerveAngle", 0.0).getEntry();
-  private GenericEntry SwerveVelocityEntry = tab.add("SwerveVelocity", 0.0).getEntry();
-  private GenericEntry SwervePositionEntry = tab.add("SwervePosition", 0.0).getEntry();
-  private GenericEntry GyroAngleEntry = tab.add("GyroAngle", 0.0).getEntry();
-
-  
-
-
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    SmartDashboard.putNumber("Turning_P", ModuleConstants.kTurningP);
+    SmartDashboard.putNumber("Turning_I", ModuleConstants.kTurningI);
+    SmartDashboard.putNumber("Turning_D", ModuleConstants.kTurningD);
+    SmartDashboard.putNumber("Driving_P", ModuleConstants.kDrivingP);
+    SmartDashboard.putNumber("Driving_I", ModuleConstants.kDrivingI);
+    SmartDashboard.putNumber("Driving_D", ModuleConstants.kDrivingD);
+    SmartDashboard.putNumber("Driving_FF", ModuleConstants.kDrivingFF);
+
     Pigeon2Configuration config = new Pigeon2Configuration();
     config.MountPosePitch = 0;
     config.MountPoseRoll = 0;
@@ -112,13 +102,13 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
 
-    double turningP = TurningPEntry.getDouble(currentTurningkP); 
-    double turningI = TurningIEntry.getDouble(currentTurningkI);
-    double turningD = TurningDEntry.getDouble(currentTurningkD);
-    double drivingP = DrivingPEntry.getDouble(currentDrivingkP);
-    double drivingI = DrivingIEntry.getDouble(currentDrivingkI);
-    double drivingD = DrivingDEntry.getDouble(currentDrivingkD);
-    double drivingFF = DrivingFFEntry.getDouble(currentDrivingkFF);
+    double turningP = SmartDashboard.getNumber("Turning_P", ModuleConstants.kTurningP);
+    double turningI = SmartDashboard.getNumber("Turning_I", ModuleConstants.kTurningI);
+    double turningD = SmartDashboard.getNumber("Turning_D", ModuleConstants.kTurningD);
+    double drivingP = SmartDashboard.getNumber("Driving_P", ModuleConstants.kDrivingP);
+    double drivingI = SmartDashboard.getNumber("Driving_I", ModuleConstants.kDrivingI);
+    double drivingD = SmartDashboard.getNumber("Driving_D", ModuleConstants.kDrivingD);
+    double drivingFF = SmartDashboard.getNumber("Driving_FF", ModuleConstants.kDrivingFF);
      if (turningP != currentTurningkP || turningI != currentTurningkD || turningD != currentTurningkD){
         currentTurningkP = turningP;
         currentTurningkI = turningI;
@@ -132,10 +122,10 @@ public class DriveSubsystem extends SubsystemBase {
         currentDrivingkFF = drivingFF;
         setDrivingPIDF();
      }
-    SwerveAngleEntry.setDouble(m_frontLeft.getStateAngle());
-    SwerveVelocityEntry.setDouble(m_frontLeft.getStateVelocity());
-    SwervePositionEntry.setDouble(m_frontLeft.getPositionMeters());
-    GyroAngleEntry.setDouble(pigeonGyro.getYaw());
+    SmartDashboard.putNumber("Swerve_Angle",m_frontLeft.getStateAngle());
+    SmartDashboard.putNumber("Swerve_Velocity",m_frontLeft.getStateVelocity());
+    SmartDashboard.putNumber("Swerve_Position",m_frontLeft.getPositionMeters());
+    SmartDashboard.putNumber("Gyro",pigeonGyro.getYaw());
     // Update the odometry in the periodic block
     m_odometry.update(
         Rotation2d.fromDegrees(pigeonGyro.getYaw()),
@@ -325,6 +315,8 @@ public class DriveSubsystem extends SubsystemBase {
    * @return The turn rate of the robot, in degrees per second
    */
   public double getTurnRate() {
-    return pigeonGyro.getHandle() * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
+    double[] degreesPerSecond = new double[] {0.0,0.0,0.0};
+    pigeonGyro.getRawGyro(degreesPerSecond);
+    return  degreesPerSecond[2]* (DriveConstants.kGyroReversed ? -1.0 : 1.0);
   }
 }
