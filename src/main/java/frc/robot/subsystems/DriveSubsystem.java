@@ -21,31 +21,18 @@ import com.ctre.phoenix.sensors.Pigeon2Configuration;
 import frc.robot.Util.SwerveUtils;
 import frc.robot.Util.Constants.DriveConstants;
 import frc.robot.Util.Constants.ModuleConstants;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
   // Create MAXSwerveModules
-  private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
-      DriveConstants.kFrontLeftDrivingCanId,
-      DriveConstants.kFrontLeftTurningCanId,
-      DriveConstants.kFrontLeftChassisAngularOffset);
+  private final MAXSwerveModule m_frontLeft;
+  private final MAXSwerveModule m_frontRight;
+  private final MAXSwerveModule m_rearLeft;
+  private final MAXSwerveModule m_rearRight;
 
-  private final MAXSwerveModule m_frontRight = new MAXSwerveModule(
-      DriveConstants.kFrontRightDrivingCanId,
-      DriveConstants.kFrontRightTurningCanId,
-      DriveConstants.kFrontRightChassisAngularOffset);
-
-  private final MAXSwerveModule m_rearLeft = new MAXSwerveModule(
-      DriveConstants.kRearLeftDrivingCanId,
-      DriveConstants.kRearLeftTurningCanId,
-      DriveConstants.kBackLeftChassisAngularOffset);
-
-  private final MAXSwerveModule m_rearRight = new MAXSwerveModule(
-      DriveConstants.kRearRightDrivingCanId,
-      DriveConstants.kRearRightTurningCanId,
-      DriveConstants.kBackRightChassisAngularOffset);
-
-  private final MAXSwerveModule[] SwerveModules = {m_frontLeft,m_frontRight,m_rearLeft,m_rearRight};
+  private final MAXSwerveModule[] SwerveModules;
 
   
 
@@ -62,7 +49,47 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
   // Odometry class for tracking robot pose
-  SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
+  SwerveDriveOdometry m_odometry;
+  
+  private double currentTurningkP = ModuleConstants.kTurningP;
+  private double currentTurningkI = ModuleConstants.kTurningI;
+  private double currentTurningkD = ModuleConstants.kTurningD;
+  private double currentTurningkFF = ModuleConstants.kTurningFF;
+
+  private double currentDrivingkP = ModuleConstants.kDrivingP;
+  private double currentDrivingkI = ModuleConstants.kDrivingI;
+  private double currentDrivingkD = ModuleConstants.kDrivingD;
+  private double currentDrivingkFF = ModuleConstants.kDrivingFF;
+
+  private double currentDirectionSlewRate = DriveConstants.kDirectionSlewRate;
+  private double currentMaxSpeed = DriveConstants.kMaxSpeedMetersPerSecond;
+  private double currentMaxAngularSpeed = DriveConstants.kMaxAngularSpeed;
+
+  /** Creates a new DriveSubsystem. */
+  public DriveSubsystem() {
+    m_frontLeft = new MAXSwerveModule(
+      DriveConstants.kFrontLeftDrivingCanId,
+      DriveConstants.kFrontLeftTurningCanId,
+      DriveConstants.kFrontLeftChassisAngularOffset);
+
+    m_frontRight = new MAXSwerveModule(
+      DriveConstants.kFrontRightDrivingCanId,
+      DriveConstants.kFrontRightTurningCanId,
+      DriveConstants.kFrontRightChassisAngularOffset);
+
+    m_rearLeft = new MAXSwerveModule(
+      DriveConstants.kRearLeftDrivingCanId,
+      DriveConstants.kRearLeftTurningCanId,
+      DriveConstants.kBackLeftChassisAngularOffset);
+    
+      m_rearRight = new MAXSwerveModule(
+        DriveConstants.kRearRightDrivingCanId,
+        DriveConstants.kRearRightTurningCanId,
+        DriveConstants.kBackRightChassisAngularOffset);
+    
+    SwerveModules = new MAXSwerveModule[]{m_frontLeft,m_frontRight,m_rearLeft,m_rearRight};
+
+    m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
       Rotation2d.fromDegrees(pigeonGyro.getYaw()),
       new SwerveModulePosition[] {
@@ -71,18 +98,7 @@ public class DriveSubsystem extends SubsystemBase {
           m_rearLeft.getPosition(),
           m_rearRight.getPosition()
       });
-  
-  private double currentTurningkP = ModuleConstants.kTurningP;
-  private double currentTurningkI = ModuleConstants.kTurningI;
-  private double currentTurningkD = ModuleConstants.kTurningD;
 
-  private double currentDrivingkP = ModuleConstants.kDrivingP;
-  private double currentDrivingkI = ModuleConstants.kDrivingI;
-  private double currentDrivingkD = ModuleConstants.kDrivingD;
-  private double currentDrivingkFF = ModuleConstants.kDrivingFF;
-
-  /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {
     SmartDashboard.putNumber("Turning_P", ModuleConstants.kTurningP);
     SmartDashboard.putNumber("Turning_I", ModuleConstants.kTurningI);
     SmartDashboard.putNumber("Turning_D", ModuleConstants.kTurningD);
@@ -90,12 +106,21 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Driving_I", ModuleConstants.kDrivingI);
     SmartDashboard.putNumber("Driving_D", ModuleConstants.kDrivingD);
     SmartDashboard.putNumber("Driving_FF", ModuleConstants.kDrivingFF);
+    SmartDashboard.putData("Zero heading", new InstantCommand(() -> zeroHeading()));
+
+    SmartDashboard.putNumber("Max Slew Speed", DriveConstants.kMaxSpeedMetersPerSecond);
+    SmartDashboard.putNumber("Max Slew Angular Speed", DriveConstants.kMaxAngularSpeed);
+    SmartDashboard.putNumber("Direction Slew Rate", DriveConstants.kDirectionSlewRate);
+
 
     Pigeon2Configuration config = new Pigeon2Configuration();
     config.MountPosePitch = 0;
     config.MountPoseRoll = 0;
     config.MountPoseYaw = 0;
     pigeonGyro.configAllSettings(config);
+
+    zeroHeading();
+    resetEncoders();
 
   }
 
@@ -105,15 +130,17 @@ public class DriveSubsystem extends SubsystemBase {
     double turningP = SmartDashboard.getNumber("Turning_P", ModuleConstants.kTurningP);
     double turningI = SmartDashboard.getNumber("Turning_I", ModuleConstants.kTurningI);
     double turningD = SmartDashboard.getNumber("Turning_D", ModuleConstants.kTurningD);
+    double turningFF = SmartDashboard.getNumber("Turning_FF", ModuleConstants.kTurningFF);
     double drivingP = SmartDashboard.getNumber("Driving_P", ModuleConstants.kDrivingP);
     double drivingI = SmartDashboard.getNumber("Driving_I", ModuleConstants.kDrivingI);
     double drivingD = SmartDashboard.getNumber("Driving_D", ModuleConstants.kDrivingD);
     double drivingFF = SmartDashboard.getNumber("Driving_FF", ModuleConstants.kDrivingFF);
-     if (turningP != currentTurningkP || turningI != currentTurningkD || turningD != currentTurningkD){
+     if (turningP != currentTurningkP || turningI != currentTurningkD || turningD != currentTurningkD || currentTurningkFF != turningFF){
         currentTurningkP = turningP;
         currentTurningkI = turningI;
         currentTurningkD = turningD;
-        setTurningPID();
+        currentTurningkFF = turningFF;
+        setTurningPIDF();
      }
      if (drivingP != currentDrivingkP || drivingI != currentDrivingkI || drivingD != currentDrivingkD || drivingFF != currentDrivingkFF){
         currentDrivingkP = drivingP;
@@ -121,6 +148,19 @@ public class DriveSubsystem extends SubsystemBase {
         currentDrivingkD = drivingD;
         currentDrivingkFF = drivingFF;
         setDrivingPIDF();
+     }
+
+     double directionSlewRate = SmartDashboard.getNumber("Direction Slew Rate", currentDirectionSlewRate);
+     if(currentDirectionSlewRate != directionSlewRate){
+      currentDirectionSlewRate = directionSlewRate;
+     }
+     double maxSpeed = SmartDashboard.getNumber("Max Slew Speed", currentMaxSpeed);
+     if(currentMaxSpeed != maxSpeed){
+      currentMaxSpeed = maxSpeed;
+     }
+     double kMaxAngularSpeed = SmartDashboard.getNumber("Max Slew Angular Speed", currentMaxAngularSpeed);
+     if(currentMaxAngularSpeed != kMaxAngularSpeed){
+      currentMaxAngularSpeed = kMaxAngularSpeed;
      }
     SmartDashboard.putNumber("Swerve_Angle",m_frontLeft.getStateAngle());
     SmartDashboard.putNumber("Swerve_Velocity",m_frontLeft.getStateVelocity());
@@ -135,13 +175,15 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
+
   }
 
-  public void setTurningPID(){
+  public void setTurningPIDF(){
     for (MAXSwerveModule module: SwerveModules){
       module.getTurningPIDController().setP(currentTurningkP);
       module.getTurningPIDController().setI(currentTurningkI);
       module.getTurningPIDController().setD(currentTurningkD);
+      module.getTurningPIDController().setFF(currentDrivingkFF);
     }
   }
 
@@ -153,6 +195,10 @@ public class DriveSubsystem extends SubsystemBase {
       module.getDrivingPIDController().setFF(currentDrivingkFF);
     }
 
+  }
+
+  public Pigeon2 getPigeonGyro() {
+      return pigeonGyro;
   }
 
   /**
@@ -251,8 +297,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, Rotation2d.fromDegrees(pigeonGyro.getYaw()))
-            : new ChassisSpeeds(xSpeed, ySpeed, rot));
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered, Rotation2d.fromDegrees(pigeonGyro.getYaw()))
+            : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);

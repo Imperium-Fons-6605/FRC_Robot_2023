@@ -1,1 +1,42 @@
-{}
+{
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [3]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [8]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser",
+      "/SmartDashboard/Zero heading": "Command"
+    }
+  },
+  "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "Retained Values": {
+      "open": false
+    },
+    "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
+      "LiveWindow": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "open": true
+      }
+    }
+  }
+}

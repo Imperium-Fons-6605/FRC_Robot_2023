@@ -11,12 +11,14 @@ public class ImperiumSparkMax extends CANSparkMax {
     private SparkMaxPIDController pidController;
     private AbsoluteEncoder absoluteEncoder;
     private RelativeEncoder relativeEncoder;
+    EncoderTypes encoderType;
 
     public enum EncoderTypes{ABSOLUTE, RELATIVE}
 
     public ImperiumSparkMax(int deviceId, MotorType type, boolean inverted, 
-    EncoderTypes encoderType, double positionFactor, double velocityFactor,
+    EncoderTypes encoderTypep, double positionFactor, double velocityFactor,
     double Kp, double Ki, double Kd, double Kff, int ampersLimit) {
+        
         
         super(deviceId, type);
         
@@ -28,6 +30,7 @@ public class ImperiumSparkMax extends CANSparkMax {
 
         setIdleMode((type == MotorType.kBrushless) ? IdleMode.kBrake : IdleMode.kCoast);
         setSmartCurrentLimit(ampersLimit);
+        encoderType = encoderTypep;
 
         if (encoderType == EncoderTypes.ABSOLUTE){
             absoluteEncoder = getAbsoluteEncoder(Type.kDutyCycle);
@@ -48,6 +51,44 @@ public class ImperiumSparkMax extends CANSparkMax {
         pidController.setD(d);
         pidController.setFF(f);
     }
+
+    public void follow (ImperiumSparkMax master){
+        follow(master);
+    }
+
+    public double getPosition(){
+        if (encoderType == EncoderTypes.ABSOLUTE){
+            return absoluteEncoder.getPosition();
+        } else {
+            return relativeEncoder.getPosition();
+        }
+    }
+
+    public double getVelocity(){
+        if (encoderType == EncoderTypes.ABSOLUTE){
+            return absoluteEncoder.getVelocity();
+        } else {
+            return relativeEncoder.getVelocity();
+        }
+    }
+
+    public double getPercentOutput(){
+        return getAppliedOutput();
+    }
+
+    public double getCPR(){
+        if (encoderType == EncoderTypes.RELATIVE){
+        return relativeEncoder.getCountsPerRevolution();
+        }
+        return 0;
+    }
+    public void setRelativeEncoderPosition(double position){
+        if (encoderType == EncoderTypes.RELATIVE){
+            relativeEncoder.setPosition(position);
+        }
+    }
+
+    
 
 
 }
