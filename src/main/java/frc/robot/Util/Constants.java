@@ -14,7 +14,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean
@@ -31,12 +30,12 @@ public final class Constants {
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
-    public static final double kMaxSpeedMetersPerSecond = 7;
-    public static final double kMaxAngularSpeed = 2 * 2 * Math.PI; // radians per second
+    public static final double kMaxSpeedMetersPerSecond = 4.8;
+    public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
-    public static final double kDirectionSlewRate = 3; // radians per second
-    public static final double kMagnitudeSlewRate = 1; // percent per second (1 = 100%)
-    public static final double kRotationalSlewRate = 1; // percent per second (1 = 100%)
+    public static final double kDirectionSlewRate = 0.9; // radians per second
+    public static final double kMagnitudeSlewRate = 1.3; // percent per second (1 = 100%)
+    public static final double kRotationalSlewRate = 1.3; // percent per second (1 = 100%)
 
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(25.8);
@@ -58,14 +57,14 @@ public final class Constants {
     // SPARK MAX CAN IDs
     public static final int kPigeonGyroID = 2;
 
-    public static final int kFrontLeftDrivingCanId = 8;
+    public static final int kFrontLeftDrivingCanId = 7;
     public static final int kRearLeftDrivingCanId = 10;
-    public static final int kFrontRightDrivingCanId = 3;
+    public static final int kFrontRightDrivingCanId = 4;
     public static final int kRearRightDrivingCanId = 5;
 
-    public static final int kFrontLeftTurningCanId = 7;
+    public static final int kFrontLeftTurningCanId = 8;
     public static final int kRearLeftTurningCanId = 9;
-    public static final int kFrontRightTurningCanId = 4;
+    public static final int kFrontRightTurningCanId = 3;
     public static final int kRearRightTurningCanId = 6;
 
     public static final boolean kGyroReversed = false;
@@ -108,9 +107,9 @@ public final class Constants {
     public static final double kDrivingMinOutput = -1;
     public static final double kDrivingMaxOutput = 1;
 
-    public static final double kTurningP = 0.3;
+    public static final double kTurningP = 0.5;
     public static final double kTurningI = 0;
-    public static final double kTurningD = 0.2;
+    public static final double kTurningD = 0;
     public static final double kTurningFF = 0;
     public static final double kTurningMinOutput = -1;
     public static final double kTurningMaxOutput = 1;
@@ -159,7 +158,7 @@ public final class Constants {
 
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
-    public static final double kDriveDeadband = 0.1;
+    public static final double kDriveDeadband = 0.05;
 
     public static final int kLogitechLeftYAxis = 1;
     public static final int kLogitechLeftXAxis = 0;
@@ -168,13 +167,13 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final PathConstraints kAutoConstraints = new PathConstraints(4, 3);
+    public static final PathConstraints kAutoConstraints = new PathConstraints(2, 1);
 
     public static final HashMap<String, Command> kEventMap = new HashMap<>();
 
     //Balance Constants
-    public static final int kBalanceGoalDegrees = 0;
-    public static final int kBalanceAngleTresholdDegrees = 2;
+    public static final double kBalanceGoalDegrees = 0;
+    public static final double kBalanceAngleTresholdDegrees = 2;
     public static final double kBalancedDrivekP = 0.2;
     public static final double kBalancedDrivekD = 0.01;
     public static final TrapezoidProfile.Constraints kBalanceConstraints = new TrapezoidProfile.Constraints(

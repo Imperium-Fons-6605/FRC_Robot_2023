@@ -171,8 +171,8 @@ public class MAXSwerveModule extends SubsystemBase{
         new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
   }
 
-  public double getStateAngle(){
-    return getState().angle.getDegrees();
+  public double getPositionAngle(){
+    return getPosition().angle.getDegrees();
   }
 
   public double getStateVelocity(){

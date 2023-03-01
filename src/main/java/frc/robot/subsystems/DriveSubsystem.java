@@ -13,15 +13,17 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.lang.invoke.VolatileCallSite;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.Pigeon2Configuration;
 
 import frc.robot.Util.SwerveUtils;
 import frc.robot.Util.Constants.DriveConstants;
-import frc.robot.Util.Constants.ModuleConstants;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -48,22 +50,15 @@ public class DriveSubsystem extends SubsystemBase {
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
+  PowerDistribution m_powerDistribution = new PowerDistribution(1, ModuleType.kRev);
+  private double VoltagePot;
+  private boolean isVelocityReduction;
+
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry;
-  
-  private double currentTurningkP = ModuleConstants.kTurningP;
-  private double currentTurningkI = ModuleConstants.kTurningI;
-  private double currentTurningkD = ModuleConstants.kTurningD;
-  private double currentTurningkFF = ModuleConstants.kTurningFF;
-
-  private double currentDrivingkP = ModuleConstants.kDrivingP;
-  private double currentDrivingkI = ModuleConstants.kDrivingI;
-  private double currentDrivingkD = ModuleConstants.kDrivingD;
-  private double currentDrivingkFF = ModuleConstants.kDrivingFF;
-
-  private double currentDirectionSlewRate = DriveConstants.kDirectionSlewRate;
-  private double currentMaxSpeed = DriveConstants.kMaxSpeedMetersPerSecond;
-  private double currentMaxAngularSpeed = DriveConstants.kMaxAngularSpeed;
+  boolean turning_first_flag = false;
+  boolean turning_second_flag = false;
+  boolean turning_third_flag = false;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -99,18 +94,7 @@ public class DriveSubsystem extends SubsystemBase {
           m_rearRight.getPosition()
       });
 
-    SmartDashboard.putNumber("Turning_P", ModuleConstants.kTurningP);
-    SmartDashboard.putNumber("Turning_I", ModuleConstants.kTurningI);
-    SmartDashboard.putNumber("Turning_D", ModuleConstants.kTurningD);
-    SmartDashboard.putNumber("Driving_P", ModuleConstants.kDrivingP);
-    SmartDashboard.putNumber("Driving_I", ModuleConstants.kDrivingI);
-    SmartDashboard.putNumber("Driving_D", ModuleConstants.kDrivingD);
-    SmartDashboard.putNumber("Driving_FF", ModuleConstants.kDrivingFF);
     SmartDashboard.putData("Zero heading", new InstantCommand(() -> zeroHeading()));
-
-    SmartDashboard.putNumber("Max Slew Speed", DriveConstants.kMaxSpeedMetersPerSecond);
-    SmartDashboard.putNumber("Max Slew Angular Speed", DriveConstants.kMaxAngularSpeed);
-    SmartDashboard.putNumber("Direction Slew Rate", DriveConstants.kDirectionSlewRate);
 
 
     Pigeon2Configuration config = new Pigeon2Configuration();
@@ -126,46 +110,18 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    VoltagePot = ((m_powerDistribution.getVoltage() - 10)/(12.0-10));
+    SmartDashboard.putNumber("Voltage Pot", VoltagePot);
 
-    double turningP = SmartDashboard.getNumber("Turning_P", ModuleConstants.kTurningP);
-    double turningI = SmartDashboard.getNumber("Turning_I", ModuleConstants.kTurningI);
-    double turningD = SmartDashboard.getNumber("Turning_D", ModuleConstants.kTurningD);
-    double turningFF = SmartDashboard.getNumber("Turning_FF", ModuleConstants.kTurningFF);
-    double drivingP = SmartDashboard.getNumber("Driving_P", ModuleConstants.kDrivingP);
-    double drivingI = SmartDashboard.getNumber("Driving_I", ModuleConstants.kDrivingI);
-    double drivingD = SmartDashboard.getNumber("Driving_D", ModuleConstants.kDrivingD);
-    double drivingFF = SmartDashboard.getNumber("Driving_FF", ModuleConstants.kDrivingFF);
-     if (turningP != currentTurningkP || turningI != currentTurningkD || turningD != currentTurningkD || currentTurningkFF != turningFF){
-        currentTurningkP = turningP;
-        currentTurningkI = turningI;
-        currentTurningkD = turningD;
-        currentTurningkFF = turningFF;
-        setTurningPIDF();
-     }
-     if (drivingP != currentDrivingkP || drivingI != currentDrivingkI || drivingD != currentDrivingkD || drivingFF != currentDrivingkFF){
-        currentDrivingkP = drivingP;
-        currentDrivingkI = drivingI;
-        currentDrivingkD = drivingD;
-        currentDrivingkFF = drivingFF;
-        setDrivingPIDF();
-     }
+    
 
-     double directionSlewRate = SmartDashboard.getNumber("Direction Slew Rate", currentDirectionSlewRate);
-     if(currentDirectionSlewRate != directionSlewRate){
-      currentDirectionSlewRate = directionSlewRate;
-     }
-     double maxSpeed = SmartDashboard.getNumber("Max Slew Speed", currentMaxSpeed);
-     if(currentMaxSpeed != maxSpeed){
-      currentMaxSpeed = maxSpeed;
-     }
-     double kMaxAngularSpeed = SmartDashboard.getNumber("Max Slew Angular Speed", currentMaxAngularSpeed);
-     if(currentMaxAngularSpeed != kMaxAngularSpeed){
-      currentMaxAngularSpeed = kMaxAngularSpeed;
-     }
-    SmartDashboard.putNumber("Swerve_Angle",m_frontLeft.getStateAngle());
-    SmartDashboard.putNumber("Swerve_Velocity",m_frontLeft.getStateVelocity());
-    SmartDashboard.putNumber("Swerve_Position",m_frontLeft.getPositionMeters());
-    SmartDashboard.putNumber("Gyro",pigeonGyro.getYaw());
+
+    SmartDashboard.putNumber("Swerve Angle",m_frontLeft.getPositionAngle());
+    SmartDashboard.putNumber("Swerve Velocity",m_frontLeft.getStateVelocity());
+    SmartDashboard.putNumber("Position X",getPose().getX());
+    SmartDashboard.putNumber("Gyro Yaw",getHeading());
+    SmartDashboard.putNumber("Gyro Roll", pigeonGyro.getRoll());
+    SmartDashboard.putNumber("Gyro Pitch", pigeonGyro.getPitch());
     // Update the odometry in the periodic block
     m_odometry.update(
         Rotation2d.fromDegrees(pigeonGyro.getYaw()),
@@ -178,23 +134,50 @@ public class DriveSubsystem extends SubsystemBase {
 
   }
 
-  public void setTurningPIDF(){
-    for (MAXSwerveModule module: SwerveModules){
-      module.getTurningPIDController().setP(currentTurningkP);
-      module.getTurningPIDController().setI(currentTurningkI);
-      module.getTurningPIDController().setD(currentTurningkD);
-      module.getTurningPIDController().setFF(currentDrivingkFF);
+  public double getVoltagePot(){
+    double currentVoltagePot;
+    double tmpVoltagePot = VoltagePot;
+    if (isVelocityReduction == true){
+      VoltagePot *= 0.3; 
     }
+
+    if (VoltagePot > 1){
+      currentVoltagePot =  1;
+    } else if (VoltagePot < 0.2) {
+      currentVoltagePot =  0.2;
+    } else {
+      currentVoltagePot = VoltagePot;
+    }
+
+    if ((currentVoltagePot < 0.3) & !turning_third_flag) {
+      for (MAXSwerveModule module: SwerveModules){
+        module.getTurningPIDController().setP(0.15);
+        turning_third_flag = true;
+        SmartDashboard.putString("Current flag", "3");
+      }
+    }
+
+    if ((currentVoltagePot < 0.5) & !turning_second_flag) {
+      for (MAXSwerveModule module: SwerveModules){
+        module.getTurningPIDController().setP(0.3);
+        turning_second_flag = true;
+        SmartDashboard.putString("Current flag", "2");
+      }
+    }
+
+    if ((currentVoltagePot < 0.8) & !turning_first_flag) {
+      for (MAXSwerveModule module: SwerveModules){
+        module.getTurningPIDController().setP(0.4);
+        turning_first_flag = true;
+        SmartDashboard.putString("Current flag", "1");
+      }
+    }
+
+    return currentVoltagePot;
   }
 
-  public void setDrivingPIDF(){
-    for (MAXSwerveModule module: SwerveModules){
-      module.getDrivingPIDController().setP(currentDrivingkP);
-      module.getDrivingPIDController().setI(currentDrivingkI);
-      module.getDrivingPIDController().setD(currentDrivingkD);
-      module.getDrivingPIDController().setFF(currentDrivingkFF);
-    }
-
+  public void reductVelocity(boolean reductVelocity){
+    isVelocityReduction = reductVelocity;
   }
 
   public Pigeon2 getPigeonGyro() {
