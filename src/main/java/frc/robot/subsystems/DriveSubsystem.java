@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
+import edu.wpi.first.math.filter.LinearFilter;
 //Hello
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -51,8 +52,11 @@ public class DriveSubsystem extends SubsystemBase {
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
   PowerDistribution m_powerDistribution = new PowerDistribution(1, ModuleType.kRev);
+
   private double VoltagePot;
-  private boolean isVelocityReduction;
+  private boolean isVelocityReduction = false;
+  private LinearFilter voltageFilter = LinearFilter.singlePoleIIR(2, 0.02);
+  double tmpVoltagePot;
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry;
@@ -110,8 +114,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    VoltagePot = ((m_powerDistribution.getVoltage() - 10)/(12.0-10));
+    VoltagePot = ((m_powerDistribution.getVoltage() - 9)/(12.0-9));
     SmartDashboard.putNumber("Voltage Pot", VoltagePot);
+    SmartDashboard.putNumber("Filtered Voltage Pot", tmpVoltagePot);
 
     
 
@@ -122,6 +127,7 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Gyro Yaw",getHeading());
     SmartDashboard.putNumber("Gyro Roll", pigeonGyro.getRoll());
     SmartDashboard.putNumber("Gyro Pitch", pigeonGyro.getPitch());
+    SmartDashboard.putNumber("Turning P", m_frontLeft.getTurningPIDController().getP());
     // Update the odometry in the periodic block
     m_odometry.update(
         Rotation2d.fromDegrees(pigeonGyro.getYaw()),
@@ -136,20 +142,19 @@ public class DriveSubsystem extends SubsystemBase {
 
   public double getVoltagePot(){
     double currentVoltagePot;
-    double tmpVoltagePot = VoltagePot;
+    tmpVoltagePot = voltageFilter.calculate(VoltagePot);
     if (isVelocityReduction == true){
-      VoltagePot *= 0.3; 
+      tmpVoltagePot *= 0.3; 
     }
 
-    if (VoltagePot > 1){
+    if (tmpVoltagePot > 1){
       currentVoltagePot =  1;
-    } else if (VoltagePot < 0.2) {
+    } else if (tmpVoltagePot < 0.2) {
       currentVoltagePot =  0.2;
     } else {
       currentVoltagePot = VoltagePot;
     }
-
-    if ((currentVoltagePot < 0.3) & !turning_third_flag) {
+    if ((VoltagePot < 7.5) & !turning_third_flag) {
       for (MAXSwerveModule module: SwerveModules){
         module.getTurningPIDController().setP(0.15);
         turning_third_flag = true;
@@ -157,17 +162,17 @@ public class DriveSubsystem extends SubsystemBase {
       }
     }
 
-    if ((currentVoltagePot < 0.5) & !turning_second_flag) {
+    if ((VoltagePot < 8) & !turning_second_flag) {
       for (MAXSwerveModule module: SwerveModules){
-        module.getTurningPIDController().setP(0.3);
+        module.getTurningPIDController().setP(0.2);
         turning_second_flag = true;
         SmartDashboard.putString("Current flag", "2");
       }
     }
 
-    if ((currentVoltagePot < 0.8) & !turning_first_flag) {
+    if ((VoltagePot < 9) & !turning_first_flag) {
       for (MAXSwerveModule module: SwerveModules){
-        module.getTurningPIDController().setP(0.4);
+        module.getTurningPIDController().setP(0.25);
         turning_first_flag = true;
         SmartDashboard.putString("Current flag", "1");
       }

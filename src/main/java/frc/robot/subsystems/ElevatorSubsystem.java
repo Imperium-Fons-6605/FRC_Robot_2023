@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -34,32 +35,48 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
                     ElevatorConstants.kMaxVelocityMeterperSec,
                     ElevatorConstants.kMaxAcceleratioMeterperSecSquared))
             );
-        
-        m_slaveSparkMax.follow(m_masterSparkMax, true);
-        m_encoder.setPositionConversionFactor( ElevatorConstants.kEncoderPositionFactor);
-        m_encoder.setPosition(0);
+        SmartDashboard.putNumber("Setpoint", 0);
+        m_masterSparkMax.restoreFactoryDefaults();
+        m_slaveSparkMax.restoreFactoryDefaults();
+        m_masterSparkMax.setSmartCurrentLimit(50);
+        m_slaveSparkMax.setSmartCurrentLimit(50);
+        m_masterSparkMax.setIdleMode(IdleMode.kBrake);
+        m_slaveSparkMax.setIdleMode(IdleMode.kBrake);
 
+        m_masterSparkMax.setInverted(true);
+
+        m_slaveSparkMax.follow(m_masterSparkMax, false);
+
+        m_encoder.setPositionConversionFactor( ElevatorConstants.kEncoderPositionFactor);
+        m_encoder.setVelocityConversionFactor( ElevatorConstants.kEncoderVelocityFactor);
+        m_encoder.setPosition(0);
+        m_slaveSparkMax.burnFlash();
+        m_masterSparkMax.burnFlash();
 
     }
 
     @Override
     public void periodic() {
-        // TODO Auto-generated method stub
         super.periodic();
-        SmartDashboard.putNumber("Position", getMeasurement());
+        enable();
+
+        setGoal(5);
         SmartDashboard.putBoolean("At Setpoint", getController().atSetpoint());
-        setpoint = SmartDashboard.getNumber("Setpoint", 0);
-        if (setpoint != prevSetpoint){
-            prevSetpoint = setpoint;
-            setGoal(setpoint);
-        }
+        SmartDashboard.putNumber("goal", getController().getGoal().position);
 
     }
 
     @Override
     protected void useOutput(double output, State setpoint) {
         double feedforward = m_feedforward.calculate(setpoint.position, setpoint.velocity);
-        m_masterSparkMax.setVoltage(output + feedforward);
+        double totalOutput = (feedforward + output);
+        SmartDashboard.putNumber("feedforward output", feedforward);
+        SmartDashboard.putNumber("setpoint position", setpoint.position);
+        SmartDashboard.putNumber("setpoint velocity", setpoint.velocity);
+        SmartDashboard.putNumber("PID Output", output);
+        SmartDashboard.putNumber("measurment", getMeasurement());
+        SmartDashboard.putNumber("Applied output", totalOutput);
+        m_masterSparkMax.setVoltage(totalOutput);
     }
 
     @Override

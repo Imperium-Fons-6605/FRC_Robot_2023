@@ -30,6 +30,9 @@ public final class Constants {
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
+    public static final double kMaxVoltage = 11.9;
+    public static final double kMinVoltage = 9.8;
+
     public static final double kMaxSpeedMetersPerSecond = 4.8;
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
@@ -100,14 +103,14 @@ public final class Constants {
     public static final double kTurningEncoderPositionPIDMinInput = 0; // radians
     public static final double kTurningEncoderPositionPIDMaxInput = 2 * Math.PI; // radians
 
-    public static final double kDrivingP = 0.1;
+    public static final double kDrivingP = 0.04;
     public static final double kDrivingI = 0;
     public static final double kDrivingD = 0;
     public static final double kDrivingFF = 1 / kDriveWheelFreeSpeedRps;
     public static final double kDrivingMinOutput = -1;
     public static final double kDrivingMaxOutput = 1;
 
-    public static final double kTurningP = 0.5;
+    public static final double kTurningP = 0.3;
     public static final double kTurningI = 0;
     public static final double kTurningD = 0;
     public static final double kTurningFF = 0;
@@ -125,16 +128,16 @@ public final class Constants {
     public static final int kElevatorMasterCANId = 11;
     public static final int kElevatorSlaveCANId = 12;
 
-    public static final double kElevatorP = 1;
+    public static final double kElevatorP = 10;
     public static final double kElevatorI = 0;
-    public static final double kElevatorD = 0.1;
+    public static final double kElevatorD = 0.02;
 
-    public static final double kElevatorSVolts = 0;
-    public static final double kElevatorGVolts = 1.44;
-    public static final double kElevatorVVoltSecperMeter = 2.0;
+    public static final double kElevatorSVolts = 0.3;
+    public static final double kElevatorGVolts = 0;
+    public static final double kElevatorVVoltSecperMeter = 0;
 
-    public static final double kMaxVelocityMeterperSec = 1;
-    public static final double kMaxAcceleratioMeterperSecSquared = 1;
+    public static final double kMaxVelocityMeterperSec = 2;
+    public static final double kMaxAcceleratioMeterperSecSquared = 2;
 
     public static final double kElevatorSprocketPitchDiameter = 3.9; //cm
     public static final double kElevatorMotorReduction = 6; //6:1 gearbox
@@ -147,16 +150,26 @@ public final class Constants {
     
   }
 
-  public static final class ArmConstants{
-    public static final int kArmMasterCANId = 20;
-    public static final int kArmSlaveCANId = 21;
-    public static final int kElevatorP = 1;
-    public static final int kElevatorI = 0;
-    public static final int kElevatorD = 0;
-    public static final int kElevatorFF = 0;
+  public static final class ExtensorConstants{
+    public static final int kExtensorCANId = 13;
+    public static final double kExtensorP = 0.2;
+    public static final double kExtensorI = 0;
+    public static final double kExtensorD = 0;
+    public static final double kExtensorFF = 0;
+  }
+
+  public static final class ClawConstants{
+    public static final int kClawAngleCANId = 14;
+    public static final int kClawSlaveCANId = 15;
+    public static final int kClawMasterCANId = 16;
+    public static final double kClawAngleP = 0.2;
+    public static final double kClawAngleI = 0;
+    public static final double kClawAngleD = 0;
+
   }
 
   public static final class OIConstants {
+    public static final String kDriverControllerType = "PS4";
     public static final int kDriverControllerPort = 0;
     public static final double kDriveDeadband = 0.05;
 
@@ -173,8 +186,8 @@ public final class Constants {
 
     //Balance Constants
     public static final double kBalanceGoalDegrees = 0;
-    public static final double kBalanceAngleTresholdDegrees = 2;
-    public static final double kBalancedDrivekP = 0.2;
+    public static final double kBalanceAngleTresholdDegrees = 3;
+    public static final double kBalancedDrivekP = 0.05;
     public static final double kBalancedDrivekD = 0.01;
     public static final TrapezoidProfile.Constraints kBalanceConstraints = new TrapezoidProfile.Constraints(
       1.0,
