@@ -109,7 +109,6 @@ public class DriveSubsystem extends SubsystemBase {
 
     zeroHeading();
     resetEncoders();
-
   }
 
   @Override

@@ -1,0 +1,151 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 1.7977873330924976,
+        "y": 4.425522231928914
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.158091775019939,
+        "y": 4.460702170425479
+      },
+      "holonomicAngle": 179.37401238038998,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": true,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "GoUp",
+          "PutUpCargo"
+        ],
+        "executionBehavior": "sequential",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 3.9819598041478534,
+        "y": 4.7457150549108515
+      },
+      "prevControl": {
+        "x": 2.541092100729137,
+        "y": 4.825763260656336
+      },
+      "nextControl": {
+        "x": 4.495048155616199,
+        "y": 4.717210146495943
+      },
+      "holonomicAngle": 49.05377187930032,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 6.840824295058006,
+        "y": 4.585618643419883
+      },
+      "prevControl": {
+        "x": 5.172129392886313,
+        "y": 4.785862031680486
+      },
+      "nextControl": {
+        "x": 7.126710744149022,
+        "y": 4.551312269528961
+      },
+      "holonomicAngle": 0,
+      "isReversal": false,
+      "velOverride": 0.2,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "sequential",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 3.970524346184213,
+        "y": 4.780021428801773
+      },
+      "prevControl": {
+        "x": 4.429227349695909,
+        "y": 4.780021428801773
+      },
+      "nextControl": {
+        "x": 3.5118213426725173,
+        "y": 4.780021428801773
+      },
+      "holonomicAngle": 48.20916003889958,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.7977873330924976,
+        "y": 3.842313875783243
+      },
+      "prevControl": {
+        "x": 2.472479352947293,
+        "y": 4.951553298256383
+      },
+      "nextControl": null,
+      "holonomicAngle": 179.31108371508208,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "PutUpCargo"
+        ],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "maxVelocity": 2.0,
+  "maxAcceleration": 2.0,
+  "isReversed": false,
+  "markers": [
+    {
+      "position": 0.4945454545454681,
+      "names": [
+        "GoDown"
+      ]
+    },
+    {
+      "position": 2.1236363636363507,
+      "names": [
+        "GrabCargo"
+      ]
+    },
+    {
+      "position": 3.5781818181818053,
+      "names": [
+        "GoUp"
+      ]
+    }
+  ]
+}

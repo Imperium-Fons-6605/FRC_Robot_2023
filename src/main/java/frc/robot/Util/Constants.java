@@ -128,15 +128,15 @@ public final class Constants {
     public static final int kElevatorMasterCANId = 11;
     public static final int kElevatorSlaveCANId = 12;
 
-    public static final double kElevatorP = 10;
+    public static final double kElevatorP = 0.02;
     public static final double kElevatorI = 0;
-    public static final double kElevatorD = 0.02;
+    public static final double kElevatorD = 0;
 
-    public static final double kElevatorSVolts = 0.3;
+    public static final double kElevatorSVolts = 0.25;
     public static final double kElevatorGVolts = 0;
-    public static final double kElevatorVVoltSecperMeter = 0;
+    public static final double kElevatorVVoltSecperMeter = 3;
 
-    public static final double kMaxVelocityMeterperSec = 2;
+    public static final double kMaxVelocityMeterperSec = 3;
     public static final double kMaxAcceleratioMeterperSecSquared = 2;
 
     public static final double kElevatorSprocketPitchDiameter = 3.9; //cm
@@ -152,25 +152,51 @@ public final class Constants {
 
   public static final class ExtensorConstants{
     public static final int kExtensorCANId = 13;
+
     public static final double kExtensorP = 0.2;
     public static final double kExtensorI = 0;
     public static final double kExtensorD = 0;
     public static final double kExtensorFF = 0;
+
+    public static final double kExtensorSprocketPitchDiameter = 3.9; //cm
+    public static final double kElevatorMotorReduction = 6; //6:1 gearbox
+    public static final double kEncoderPositionFactor = (kExtensorSprocketPitchDiameter * Math.PI)
+     / kElevatorMotorReduction; //cm
+    public static final double kEncoderVelocityFactor = kEncoderPositionFactor
+     / 60; //cm per sec
   }
 
   public static final class ClawConstants{
     public static final int kClawAngleCANId = 14;
-    public static final int kClawSlaveCANId = 15;
-    public static final int kClawMasterCANId = 16;
-    public static final double kClawAngleP = 0.2;
+    public static final int kClawSlaveExpulsorCANId = 15;
+    public static final int kClawMasterExpulsorCANId = 16;
+
+    public static final double kWristPulleyDiameter = 6.5; //cm
+    public static final double kWristPulleyCircumference = kWristPulleyDiameter * Math.PI; 
+    public static final double kWristEncoderCPR = 1092;
+    public static final int kWristMotorReduction = 80;
+    public static final double kWristEncoderPositionFactor = (2 * Math.PI) / (kWristEncoderCPR *  kWristMotorReduction);
+    public static final double kWristOffsetRad = 0;
+
+
+    public static final double kClawAngleP = 0;
     public static final double kClawAngleI = 0;
     public static final double kClawAngleD = 0;
+
+    public static final double kClawSVolts = 0.1;
+    public static final double kClawGVolts = 0.1;
+    public static final double kClawVVoltSecPerRad = 0;
+
+    public static final double kClawMaxVelocityRadPerSec = 0.5;
+    public static final double kClawMaxAccelerationRadPerSecSquared = 1;
+
 
   }
 
   public static final class OIConstants {
     public static final String kDriverControllerType = "PS4";
     public static final int kDriverControllerPort = 0;
+    public static final int kCommandsControllerPort = 1;
     public static final double kDriveDeadband = 0.05;
 
     public static final int kLogitechLeftYAxis = 1;
