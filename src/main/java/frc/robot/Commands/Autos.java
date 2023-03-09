@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.Util.Constants.AutoConstants;
@@ -68,11 +69,11 @@ public class Autos {
             } else {
                 switch (position) {
                     case 1:
-                        return m_oneAuto.andThen(m_oneChargeAuto);
+                        return m_oneAuto.andThen(m_oneChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX(), (Subsystem)RobotContainer.m_driveSubsystem));
                     case 2:
-                        return m_twoAuto.andThen(m_twoChargeAuto);
+                        return m_twoAuto.andThen(m_twoChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX(), (Subsystem)RobotContainer.m_driveSubsystem));
                     case 3:
-                        return m_threeAuto.andThen(m_threeChargeAuto);
+                        return m_threeAuto.andThen(m_threeChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX(), (Subsystem)RobotContainer.m_driveSubsystem));
                 }
             }
             return new InstantCommand(() -> RobotContainer.m_driveSubsystem.drive(0.2, 0, 0, true, true)).withTimeout(3);

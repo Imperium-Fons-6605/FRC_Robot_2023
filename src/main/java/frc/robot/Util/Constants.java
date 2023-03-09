@@ -9,7 +9,10 @@ import java.util.HashMap;
 import com.pathplanner.lib.PathConstraints;
 import com.revrobotics.CANSparkMax.IdleMode;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -37,7 +40,7 @@ public final class Constants {
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
     public static final double kDirectionSlewRate = 0.9; // radians per second
-    public static final double kMagnitudeSlewRate = 1.3; // percent per second (1 = 100%)
+    public static final double kMagnitudeSlewRate = 1; // percent per second (1 = 100%)
     public static final double kRotationalSlewRate = 1.3; // percent per second (1 = 100%)
 
     // Chassis configuration
@@ -128,16 +131,17 @@ public final class Constants {
     public static final int kElevatorMasterCANId = 11;
     public static final int kElevatorSlaveCANId = 12;
 
-    public static final double kElevatorP = 0.02;
+    public static final double kElevatorP = 1.4;
     public static final double kElevatorI = 0;
-    public static final double kElevatorD = 0;
+    public static final double kElevatorD = 0.005;
 
-    public static final double kElevatorSVolts = 0.25;
+    public static final double kElevatorSVolts = 0.1;
     public static final double kElevatorGVolts = 0;
-    public static final double kElevatorVVoltSecperMeter = 3;
+    public static final double kElevatorVVoltSecperCm = 0.1;
+    public static final double kMaxVelocityCmperSec = 100;
+    public static final double kMaxAcceleratioCmperSecSquared = 200;
 
-    public static final double kMaxVelocityMeterperSec = 3;
-    public static final double kMaxAcceleratioMeterperSecSquared = 2;
+    public static final double kDirectionSlewRate = 1; //percent per second (1 = 100%)
 
     public static final double kElevatorSprocketPitchDiameter = 3.9; //cm
     public static final double kElevatorMotorReduction = 6; //6:1 gearbox
@@ -145,18 +149,22 @@ public final class Constants {
      / kElevatorMotorReduction; //cm
     public static final double kEncoderVelocityFactor = kEncoderPositionFactor
      / 60; //cm per sec
-
-
-    
+    public static final double kElevatorMaxHeight = 80;
+    public static final double kElevatorMinHeight = 0; 
   }
 
   public static final class ExtensorConstants{
     public static final int kExtensorCANId = 13;
 
-    public static final double kExtensorP = 0.2;
+    public static final double kExtensorP = 1;
     public static final double kExtensorI = 0;
     public static final double kExtensorD = 0;
-    public static final double kExtensorFF = 0;
+
+    public static final double kExtensorkSVolts = 0.1;
+    public static final double kExtensorVVoltSecperCm = 0.1;
+
+    public static final double kMaxVelocityCmperSec = 40;
+    public static final double kMaxAcceleratioCmperSecSquared = 80;
 
     public static final double kExtensorSprocketPitchDiameter = 3.9; //cm
     public static final double kElevatorMotorReduction = 6; //6:1 gearbox
@@ -164,36 +172,52 @@ public final class Constants {
      / kElevatorMotorReduction; //cm
     public static final double kEncoderVelocityFactor = kEncoderPositionFactor
      / 60; //cm per sec
+
+    public static final double kExtensorMaxExtension = 37;
+    public static final double kExtensorMinExtension = 0; 
   }
 
   public static final class ClawConstants{
     public static final int kClawAngleCANId = 14;
+    public static final int kClawAngleEncoderDIOPort = 0;
     public static final int kClawSlaveExpulsorCANId = 15;
     public static final int kClawMasterExpulsorCANId = 16;
 
     public static final double kWristPulleyDiameter = 6.5; //cm
     public static final double kWristPulleyCircumference = kWristPulleyDiameter * Math.PI; 
     public static final double kWristEncoderCPR = 1092;
-    public static final int kWristMotorReduction = 80;
-    public static final double kWristEncoderPositionFactor = (2 * Math.PI) / (kWristEncoderCPR *  kWristMotorReduction);
+    //public static final int kWristMotorReduction = 80;
+    //public static final double kWristEncoderPositionFactor = (2 * Math.PI) / (kWristEncoderCPR *  kWristMotorReduction);
+    public static final double kWristEncoderPositionFactor = (2 * Math.PI) / kWristEncoderCPR;
     public static final double kWristOffsetRad = 0;
 
 
-    public static final double kClawAngleP = 0;
+    public static final double kClawAngleP = 1;
     public static final double kClawAngleI = 0;
     public static final double kClawAngleD = 0;
 
-    public static final double kClawSVolts = 0.1;
-    public static final double kClawGVolts = 0.1;
-    public static final double kClawVVoltSecPerRad = 0;
+    public static final double kClawSVolts = 0.2;
+    public static final double kClawGVolts = 0.3;
+    public static final double kClawVVoltSecPerRad = 6;
 
-    public static final double kClawMaxVelocityRadPerSec = 0.5;
-    public static final double kClawMaxAccelerationRadPerSecSquared = 1;
+    public static final double kClawMaxVelocityRadPerSec = 1;
+    public static final double kClawMaxAccelerationRadPerSecSquared = 2;
 
 
   }
 
+  public static final class VisionConstants{
+    public static final Transform3d kTransformRobotToCam = new Transform3d(
+      new Translation3d(0.5, 0.0, 0.5),
+      new Rotation3d(
+              0, 0,
+              0)); // Cam mounted facing forward, half a meter forward of center, half a meter up
+// from center.
+    public static final String kCameraName = "6605Camera";
+  }
+
   public static final class OIConstants {
+    public static boolean isManualControl;
     public static final String kDriverControllerType = "PS4";
     public static final int kDriverControllerPort = 0;
     public static final int kCommandsControllerPort = 1;
@@ -203,6 +227,16 @@ public final class Constants {
     public static final int kLogitechLeftXAxis = 0;
     public static final int kLogitechRightYAxis = 3;
     public static final int kLogitechRightXAxis = 2;
+
+    public static final int kLogitechDownButton= 2;
+    public static final int kLogitechRightButton= 3;
+    public static final int kLogitechLeftButton= 1;
+    public static final int kLogitechUpButton= 4;
+    public static final int kLogitechR1= 6;
+    public static final int kLogitechL1= 5;
+    public static final int kLogitechR2= 7;
+    public static final int kLogitechL2= 8;
+
   }
 
   public static final class AutoConstants {

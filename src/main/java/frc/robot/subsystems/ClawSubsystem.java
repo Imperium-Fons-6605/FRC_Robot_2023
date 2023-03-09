@@ -7,7 +7,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Util.Constants.ClawConstants;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -16,7 +15,7 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
     private final VictorSPX m_angleVictor = new VictorSPX(ClawConstants.kClawAngleCANId);
     private final VictorSPX m_masterExpulsorVictor = new VictorSPX(ClawConstants.kClawMasterExpulsorCANId);
     private final VictorSPX m_slaveExpulsorVictor = new VictorSPX(ClawConstants.kClawSlaveExpulsorCANId);
-    private final DutyCycleEncoder m_angleEncoder = new DutyCycleEncoder(0);
+    private final DutyCycleEncoder m_angleEncoder = new DutyCycleEncoder(ClawConstants.kClawAngleEncoderDIOPort);
 
     private final ArmFeedforward m_feedforward = new ArmFeedforward(
         ClawConstants.kClawSVolts, 
@@ -34,8 +33,8 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
             )
         );
         m_angleEncoder.setDistancePerRotation(ClawConstants.kWristEncoderPositionFactor);
-
-        m_slaveExpulsorVictor.setInverted(true);
+        m_masterExpulsorVictor.setInverted(true);
+        m_slaveExpulsorVictor.setInverted(false);
         m_slaveExpulsorVictor.follow(m_masterExpulsorVictor,FollowerType.PercentOutput);
         getController().setTolerance(0.08);
     }
@@ -62,8 +61,7 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
         m_angleVictor.set(ControlMode.PercentOutput, totalOutput);
     }
 
-    public void expulseCargo(double percentOutput){
+    public void setClawPercentOutput(double percentOutput){
         m_masterExpulsorVictor.set(ControlMode.PercentOutput, percentOutput);
-    }
-    
+    }    
 }

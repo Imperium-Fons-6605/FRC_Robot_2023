@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.LinearFilter;
 //Hello
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -19,12 +20,17 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.lang.invoke.VolatileCallSite;
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.Pigeon2Configuration;
 
+import frc.robot.RobotContainer;
 import frc.robot.Util.SwerveUtils;
 import frc.robot.Util.Constants.DriveConstants;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -37,10 +43,16 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final MAXSwerveModule[] SwerveModules;
 
+
   
 
   // The gyro sensor
   private final Pigeon2 pigeonGyro = new Pigeon2(DriveConstants.kPigeonGyroID);
+  private final SwerveDrivePoseEstimator m_poseEstimator;
+  boolean turning_first_flag = false;
+  boolean turning_second_flag = false;
+  boolean turning_third_flag = false;
+
 
   // Slew rate filter variables for controlling lateral acceleration
   private double m_currentRotation = 0.0;
@@ -59,10 +71,6 @@ public class DriveSubsystem extends SubsystemBase {
   double tmpVoltagePot;
 
   // Odometry class for tracking robot pose
-  SwerveDriveOdometry m_odometry;
-  boolean turning_first_flag = false;
-  boolean turning_second_flag = false;
-  boolean turning_third_flag = false;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -87,16 +95,17 @@ public class DriveSubsystem extends SubsystemBase {
         DriveConstants.kBackRightChassisAngularOffset);
     
     SwerveModules = new MAXSwerveModule[]{m_frontLeft,m_frontRight,m_rearLeft,m_rearRight};
-
-    m_odometry = new SwerveDriveOdometry(
+    m_poseEstimator = new SwerveDrivePoseEstimator(
       DriveConstants.kDriveKinematics,
       Rotation2d.fromDegrees(pigeonGyro.getYaw()),
       new SwerveModulePosition[] {
-          m_frontLeft.getPosition(),
-          m_frontRight.getPosition(),
-          m_rearLeft.getPosition(),
-          m_rearRight.getPosition()
-      });
+        m_frontLeft.getPosition(),
+        m_frontRight.getPosition(),
+        m_rearLeft.getPosition(),
+        m_rearRight.getPosition()
+      },
+      new Pose2d());
+    RobotContainer.m_visionSubsystem = new VisionSubsystem();
 
     SmartDashboard.putData("Zero heading", new InstantCommand(() -> zeroHeading()));
 
@@ -128,16 +137,33 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Gyro Pitch", pigeonGyro.getPitch());
     SmartDashboard.putNumber("Turning P", m_frontLeft.getTurningPIDController().getP());
     // Update the odometry in the periodic block
-    m_odometry.update(
-        Rotation2d.fromDegrees(pigeonGyro.getYaw()),
-        new SwerveModulePosition[] {
-            m_frontLeft.getPosition(),
-            m_frontRight.getPosition(),
-            m_rearLeft.getPosition(),
-            m_rearRight.getPosition()
-        });
+    updateOdometry();
 
   }
+
+  /** Updates the field-relative position. */
+  public void updateOdometry() {
+    m_poseEstimator.update(
+      Rotation2d.fromDegrees(pigeonGyro.getYaw()),
+      new SwerveModulePosition[] {
+          m_frontLeft.getPosition(),
+          m_frontRight.getPosition(),
+          m_rearLeft.getPosition(),
+          m_rearRight.getPosition()
+      });
+    /* 
+    Optional<EstimatedRobotPose> result =
+            pcw.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());
+
+    if (result.isPresent()) {
+        EstimatedRobotPose camPose = result.get();
+        m_poseEstimator.addVisionMeasurement(
+                camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
+    } else {
+        // move it way off the screen to make it disappear
+    }
+    */
+}
 
   public double getVoltagePot(){
     double currentVoltagePot;
@@ -194,7 +220,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @return The pose.
    */
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return m_poseEstimator.getEstimatedPosition();
   }
 
   /**
@@ -203,7 +229,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @param pose The pose to which to set the odometry.
    */
   public void resetOdometry(Pose2d pose) {
-    m_odometry.resetPosition(
+    m_poseEstimator.resetPosition(
         Rotation2d.fromDegrees(pigeonGyro.getYaw()),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),

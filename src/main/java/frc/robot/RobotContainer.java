@@ -6,10 +6,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Commands.Autos;
 import frc.robot.Commands.CSBalanceCommand;
+import frc.robot.Commands.SetElevatorLevel;
+import frc.robot.Commands.SetExtensorLevel;
 import frc.robot.Util.Constants.AutoConstants;
 import frc.robot.Util.Constants.OIConstants;
+import frc.robot.subsystems.ClawSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ExtensorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -22,6 +26,8 @@ public class RobotContainer {
   //Subsystems
   public static final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   public static final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
+  public static final ExtensorSubsystem m_extensorSubsystem = new ExtensorSubsystem();
+  public static final ClawSubsystem m_clawSubsystem = new ClawSubsystem();
 
   //Comands
   public static final Autos m_autosFactory = new Autos();
@@ -42,6 +48,11 @@ public class RobotContainer {
     AutoConstants.kEventMap.put("GrabCargo", new PrintCommand("Grabbing Cargo..."));
     AutoConstants.kEventMap.put("Balance", new CSBalanceCommand());
     m_autosFactory.buildAutos();
+    m_positionChooser.setDefaultOption("1", 1);
+    m_positionChooser.addOption("2", 2);
+    m_positionChooser.addOption("3", 3);
+    m_onBalanceChooser.addOption("Yes", true);
+    m_onBalanceChooser.addOption("No", false);
     configureButtonBindings();
   }
 
@@ -63,10 +74,16 @@ public class RobotContainer {
     m_PS4DriverController.L1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(false)));
 
     //Commands bindings
-    m_GenericCommandsController.povUp().onTrue(new InstantCommand(() -> m_elevatorSubsystem.goUp()));
-    m_GenericCommandsController.povDown().onTrue(new InstantCommand(() -> m_elevatorSubsystem.goDown()));
-    m_GenericCommandsController.button(4).onTrue(
-      new InstantCommand(() -> m_elevatorSubsystem.toggleManual()));
+    m_GenericCommandsController.button(OIConstants.kLogitechDownButton).onTrue(new SetElevatorLevel(0).alongWith(new SetExtensorLevel(0)));
+    m_GenericCommandsController.button(OIConstants.kLogitechRightButton).onTrue(new SetElevatorLevel(1).alongWith(new SetExtensorLevel(1)));
+    m_GenericCommandsController.button(OIConstants.kLogitechUpButton).onTrue(new SetElevatorLevel(2).alongWith(new SetExtensorLevel(2)));
+    m_GenericCommandsController.button(OIConstants.kLogitechR1).onTrue(
+      new InstantCommand(() -> m_elevatorSubsystem.setManual(false)).alongWith(new InstantCommand(() -> m_extensorSubsystem.setManual(false))));
+    m_GenericCommandsController.button(OIConstants.kLogitechL1).onTrue(
+      new InstantCommand(() -> m_elevatorSubsystem.setManual(true)).alongWith(new InstantCommand(() -> m_extensorSubsystem.setManual(true))));
+    m_GenericCommandsController.button(OIConstants.kLogitechL2).whileTrue(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(-0.2)));
+    m_GenericCommandsController.button(OIConstants.kLogitechR2).whileTrue(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0.2)));
+    m_GenericCommandsController.button(OIConstants.kLogitechL2).or(m_GenericCommandsController.button(OIConstants.kLogitechR2)).onFalse(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0)));
   }
 
   public Command getAutonomousCommand() {

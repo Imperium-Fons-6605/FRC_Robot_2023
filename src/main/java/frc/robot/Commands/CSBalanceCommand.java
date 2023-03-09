@@ -53,11 +53,6 @@ public class CSBalanceCommand extends CommandBase{
   }
 
   @Override
-  public void end(boolean interrupted) {
-    m_DriveSubsystem.setX();
-  }
-
-  @Override
   public boolean isFinished() {
     return isDocked; 
   }
