@@ -69,11 +69,11 @@ public class Autos {
             } else {
                 switch (position) {
                     case 1:
-                        return m_oneAuto.andThen(m_oneChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX(), (Subsystem)RobotContainer.m_driveSubsystem));
+                        return m_oneAuto.andThen(m_oneChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()).withTimeout(2));
                     case 2:
-                        return m_twoAuto.andThen(m_twoChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX(), (Subsystem)RobotContainer.m_driveSubsystem));
+                        return m_twoAuto.andThen(m_twoChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()).withTimeout(2));
                     case 3:
-                        return m_threeAuto.andThen(m_threeChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX(), (Subsystem)RobotContainer.m_driveSubsystem));
+                        return m_threeAuto.andThen(m_threeChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()).withTimeout(2));
                 }
             }
             return new InstantCommand(() -> RobotContainer.m_driveSubsystem.drive(0.2, 0, 0, true, true)).withTimeout(3);

@@ -45,5 +45,8 @@ public class VisionSubsystem {
         return m_photonPoseEstimator.update();
     }
     
+    public PhotonCamera getCamera(){
+        return m_camera;
+    }
 
 }

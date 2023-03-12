@@ -63,7 +63,6 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
         double feedforward = m_feedforward.calculate(setpoint.velocity);
         double totalOutput = feedforward + output;
         SmartDashboard.putBoolean("Extensor At Setpoint", getController().atGoal());
-        SmartDashboard.putNumber("Extensor goal", getController().getGoal().position);
         SmartDashboard.putNumber("Extensor velocity", setpoint.velocity);
         SmartDashboard.putNumber("PID Output", output);
     m_extensorMotor.setVoltage(totalOutput);
@@ -86,23 +85,25 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
         }
         enable();
         SmartDashboard.putNumber("Extensor Level", m_extensorLevel);
+        SmartDashboard.putNumber("Extensor goal", getController().getGoal().position);
     }
      @Override
      public void periodic() {
         super.periodic();
         SmartDashboard.putNumber("Extensor measurment", getMeasurement());
         if (isManual){
-            double output = 0.15 * (-MathUtil.applyDeadband(RobotContainer.m_GenericCommandsController.getRawAxis(OIConstants.kLogitechRightXAxis), OIConstants.kDriveDeadband));
-            double forwardSoftLimit = (getMeasurement() - ExtensorConstants.kExtensorMaxExtension)/(20 - ExtensorConstants.kExtensorMaxExtension);
-            double backwardsSoftLimit = (getMeasurement() - ExtensorConstants.kExtensorMinExtension)/(15 - ExtensorConstants.kExtensorMinExtension);
+            double output = 0.2 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getRightY(), OIConstants.kDriveDeadband));
+            double forwardSoftLimit = (getMeasurement() - ExtensorConstants.kExtensorMaxExtension)/(25 - ExtensorConstants.kExtensorMaxExtension);
+            double backwardsSoftLimit = (getMeasurement() - ExtensorConstants.kExtensorMinExtension)/(10 - ExtensorConstants.kExtensorMinExtension);
             if ((forwardSoftLimit < 1) && (output > 0)){
-                m_extensorMotor.set((output * forwardSoftLimit) + (ExtensorConstants.kExtensorkSPercent * Math.signum(output)));
+                m_extensorMotor.set((output * forwardSoftLimit));
             } else if ((backwardsSoftLimit < 1) && (output < 0)) {
-                m_extensorMotor.set((output * backwardsSoftLimit) + (ExtensorConstants.kExtensorkSPercent * Math.signum(output)));
+                m_extensorMotor.set((output * backwardsSoftLimit));
             } else {
-                m_extensorMotor.set(output + (ExtensorConstants.kExtensorkSPercent * Math.signum(output)));
+                m_extensorMotor.set(output);
             }
          }
+         SmartDashboard.putNumber("Elevator Applied Output", m_extensorMotor.getAppliedOutput());
      }
 
     public void setManual(boolean manual){

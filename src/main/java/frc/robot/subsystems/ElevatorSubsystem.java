@@ -95,7 +95,6 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
     public void setLevel(int level){
         if (isManual != true){
             m_elevatorLevel = level;
-            SmartDashboard.putNumber("Elevator level", m_elevatorLevel);
             switch (m_elevatorLevel){
                 case 0: 
                     setGoal(0);
@@ -104,10 +103,12 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
                     setGoal(30);
                     break;
                 case 2:
-                    setGoal(80);
+                    setGoal(70);
                     break;
             }
             enable();
+            SmartDashboard.putNumber("Extensor Level", m_elevatorLevel);
+            SmartDashboard.putNumber("Extensor goal", getController().getGoal().position);
         }
     }
      @Override
@@ -115,17 +116,19 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
         super.periodic();
         SmartDashboard.putNumber("Elevator measurment", getMeasurement());
          if (isManual){
-            double output = (-MathUtil.applyDeadband(RobotContainer.m_GenericCommandsController.getRawAxis(OIConstants.kLogitechLeftYAxis), OIConstants.kDriveDeadband));
-            double ratedOutput = 0.3 * m_dirLimiter.calculate(output);
-            double forwardSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMaxHeight)/(55-ElevatorConstants.kElevatorMaxHeight);
-            double backwardsSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMinHeight)/(25 - ElevatorConstants.kElevatorMinHeight);
+            double output = 0.3 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getLeftY(), OIConstants.kDriveDeadband));
+            double ratedOutput = m_dirLimiter.calculate(output);
+            SmartDashboard.putNumber("Elevator Joystick", ratedOutput);
+            double forwardSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMaxHeight)/(50-ElevatorConstants.kElevatorMaxHeight);
+            double backwardsSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMinHeight)/(30 - ElevatorConstants.kElevatorMinHeight);
             if ((forwardSoftLimit < 1) && (ratedOutput > 0)){
-                m_masterSparkMax.set((ratedOutput * forwardSoftLimit) + ElevatorConstants.kElevatorGVolts);
+                m_masterSparkMax.set((ratedOutput * forwardSoftLimit) + 0.05);
             } else if ((backwardsSoftLimit < 1) && (output < 0)) {
-                m_masterSparkMax.set((ratedOutput * backwardsSoftLimit) + ElevatorConstants.kElevatorGVolts);
+                m_masterSparkMax.set((ratedOutput * backwardsSoftLimit) + 0.05);
             } else {
-                m_masterSparkMax.set(ratedOutput + 0.08 * Math.signum(output));
+                m_masterSparkMax.set(ratedOutput + 0.05);
             }
+            SmartDashboard.putNumber("Elevator applied output", m_masterSparkMax.getAppliedOutput());
          }
      }
 

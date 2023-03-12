@@ -105,7 +105,6 @@ public class DriveSubsystem extends SubsystemBase {
         m_rearRight.getPosition()
       },
       new Pose2d());
-    RobotContainer.m_visionSubsystem = new VisionSubsystem();
 
     SmartDashboard.putData("Zero heading", new InstantCommand(() -> zeroHeading()));
 
