@@ -12,14 +12,15 @@ public class SetExtensorLevel extends CommandBase{
         m_extensorLevel = level;
         addRequirements(RobotContainer.m_extensorSubsystem);
     }
+
     @Override
-    public void execute() {
-        super.execute();
+    public void initialize() {
+        super.initialize();
         m_extensor.setExtension(m_extensorLevel);
     }
 
     @Override
     public boolean isFinished() {
-        return RobotContainer.m_extensorSubsystem.getController().atGoal();
+        return m_extensor.getController().atGoal();
     }
 }

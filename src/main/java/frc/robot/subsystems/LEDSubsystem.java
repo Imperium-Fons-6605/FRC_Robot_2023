@@ -27,6 +27,10 @@ public class LEDSubsystem extends SubsystemBase{
     @Override
     public void periodic() {
         super.periodic();
+        if (m_mode == LEDMode.RAINBOW){
+            fillRainbow();
+        } 
+        m_led.setData(m_ledBuffer);
 
     }
 
@@ -45,10 +49,15 @@ public class LEDSubsystem extends SubsystemBase{
       m_rainbowFirstPixelHue %= 180;
     }
 
-    public void setColor(int hue, int saturation, int value) {
-        m_Hue = hue;
-        m_Saturation = saturation;
-        m_Value = value;
+    public void setRainbow(){
+        m_mode = LEDMode.RAINBOW;
+    }
+
+    public void setCustomColor(int hue, int saturation, int value) {
+        m_mode = LEDMode.CUSTOM;
+        for (var i = 0; i < m_ledBuffer.getLength(); i++) {
+            m_ledBuffer.setHSV(i, hue, saturation, value);
+          }
     }
 
 }

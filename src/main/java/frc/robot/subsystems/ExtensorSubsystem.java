@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,7 +26,8 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
         ExtensorConstants.kExtensorkSVolts, 
         ExtensorConstants.kExtensorVVoltSecperCm);
 
-    private boolean isManual = false;
+    private final SlewRateLimiter m_rateLimiter = new SlewRateLimiter(ExtensorConstants.kDirectionSlewRate);
+
     private int m_extensorLevel = 0;
 
 
@@ -34,9 +36,7 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
             ExtensorConstants.kExtensorP, 
             ExtensorConstants.kExtensorI, 
             ExtensorConstants.kExtensorD,
-            new TrapezoidProfile.Constraints(
-                ExtensorConstants.kMaxVelocityCmperSec,
-                ExtensorConstants.kMaxAcceleratioCmperSecSquared)
+            new TrapezoidProfile.Constraints(ExtensorConstants.kMaxVelocityCmperSec, ExtensorConstants.kMaxAcceleratioCmperSecSquared)
             )
         );
         m_extensorMotor.restoreFactoryDefaults();
@@ -50,7 +50,8 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
 
         m_extensorMotor.burnFlash();
 
-        getController().setTolerance(2);
+        getController().setTolerance(1);
+        enable();
     }
 
     @Override
@@ -58,18 +59,9 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
         return m_extensorEncoder.getPosition();
     }
     
-    @Override
-    protected void useOutput(double output, State setpoint) {
-        double feedforward = m_feedforward.calculate(setpoint.velocity);
-        double totalOutput = feedforward + output;
-        SmartDashboard.putBoolean("Extensor At Setpoint", getController().atGoal());
-        SmartDashboard.putNumber("Extensor velocity", setpoint.velocity);
-        SmartDashboard.putNumber("PID Output", output);
-    m_extensorMotor.setVoltage(totalOutput);
-    }
 
     public void setExtension(int level){
-        if (isManual != true){
+        if (OIConstants.isManual != true){
             m_extensorLevel = level;
             switch (m_extensorLevel){
                 case 0: 
@@ -85,33 +77,51 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
         }
         enable();
         SmartDashboard.putNumber("Extensor Level", m_extensorLevel);
-        SmartDashboard.putNumber("Extensor goal", getController().getGoal().position);
     }
      @Override
      public void periodic() {
         super.periodic();
         SmartDashboard.putNumber("Extensor measurment", getMeasurement());
-        if (isManual){
-            double output = 0.2 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getRightY(), OIConstants.kDriveDeadband));
+        SmartDashboard.putNumber("Elevator Applied Output", m_extensorMotor.getAppliedOutput());
+        if (OIConstants.isManual){
+            double output = 0.35 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getRightY(), OIConstants.kDriveDeadband));
+            double ratedOutput = m_rateLimiter.calculate(output);
             double forwardSoftLimit = (getMeasurement() - ExtensorConstants.kExtensorMaxExtension)/(25 - ExtensorConstants.kExtensorMaxExtension);
             double backwardsSoftLimit = (getMeasurement() - ExtensorConstants.kExtensorMinExtension)/(10 - ExtensorConstants.kExtensorMinExtension);
-            if ((forwardSoftLimit < 1) && (output > 0)){
-                m_extensorMotor.set((output * forwardSoftLimit));
-            } else if ((backwardsSoftLimit < 1) && (output < 0)) {
-                m_extensorMotor.set((output * backwardsSoftLimit));
+            if ((forwardSoftLimit < 1) && (ratedOutput > 0)){
+                m_extensorMotor.set((ratedOutput * forwardSoftLimit));
+            } else if ((backwardsSoftLimit < 1) && (ratedOutput < 0)) {
+                m_extensorMotor.set((ratedOutput * backwardsSoftLimit));
             } else {
-                m_extensorMotor.set(output);
+                m_extensorMotor.set(ratedOutput);
             }
          }
-         SmartDashboard.putNumber("Elevator Applied Output", m_extensorMotor.getAppliedOutput());
      }
 
     public void setManual(boolean manual){
-        isManual = manual;
-        if (isManual = true){
+        OIConstants.isManual = manual;
+        if (OIConstants.isManual = true){
             disable();
         } else {
             enable();
         }
+    }
+
+    @Override
+    protected void useOutput(double output, State setpoint) {
+            if (!OIConstants.isManual){
+                if(!getController().atGoal()){
+                    double feedforward = m_feedforward.calculate(setpoint.velocity);
+                    double totalOutput = output + feedforward;
+                    SmartDashboard.putBoolean("Extensor At Setpoint", getController().atGoal());
+                    SmartDashboard.putNumber("Extensor velocity", setpoint.velocity);
+                    SmartDashboard.putNumber("Extensor position", setpoint.position);
+                    SmartDashboard.putNumber("Extensor PID Output", output);
+                    SmartDashboard.putNumber("Extensor Feedforward output", feedforward);
+                    m_extensorMotor.setVoltage(totalOutput);
+                } else {
+                    m_extensorMotor.set(0);
+                }
+            }
     }
 }

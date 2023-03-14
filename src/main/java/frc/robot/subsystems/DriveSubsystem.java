@@ -122,19 +122,12 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     VoltagePot = ((m_powerDistribution.getVoltage() - 9)/(12.0-9));
-    SmartDashboard.putNumber("Voltage Pot", VoltagePot);
-    SmartDashboard.putNumber("Filtered Voltage Pot", tmpVoltagePot);
-
-    
-
-
-    SmartDashboard.putNumber("Swerve Angle",m_frontLeft.getPositionAngle());
-    SmartDashboard.putNumber("Swerve Velocity",m_frontLeft.getStateVelocity());
     SmartDashboard.putNumber("Position X",getPose().getX());
+    SmartDashboard.putNumber("Position Y",getPose().getY());
+    SmartDashboard.putNumber("Position Rotation",getPose().getRotation().getRadians());
     SmartDashboard.putNumber("Gyro Yaw",getHeading());
     SmartDashboard.putNumber("Gyro Roll", pigeonGyro.getRoll());
     SmartDashboard.putNumber("Gyro Pitch", pigeonGyro.getPitch());
-    SmartDashboard.putNumber("Turning P", m_frontLeft.getTurningPIDController().getP());
     // Update the odometry in the periodic block
     updateOdometry();
 

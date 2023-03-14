@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Util.Constants.VisionConstants;
@@ -52,7 +53,7 @@ public class TrackApriltag extends CommandBase{
     private final Supplier<Pose2d> m_robotPoserProvider;
     private int tagToChase = 1;
     private int m_GoalToChase = 1;
-    private PhotonTrackedTarget m_lastTarget = null;
+    private PhotonTrackedTarget m_lastTarget;
 
     private final ProfiledPIDController xController = 
         new ProfiledPIDController(
@@ -77,9 +78,9 @@ public class TrackApriltag extends CommandBase{
         m_driveSubsystem = RobotContainer.m_driveSubsystem;
         m_robotPoserProvider = RobotContainer.m_driveSubsystem::getPose;
 
-        xController.setTolerance(0.02);
-        yController.setTolerance(0.02);
-        omegaController.setTolerance(Units.degreesToRadians(3));
+        xController.setTolerance(0.04);
+        yController.setTolerance(0.4);
+        omegaController.setTolerance(Units.degreesToRadians(2));
         omegaController.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(RobotContainer.m_driveSubsystem);
@@ -101,6 +102,14 @@ public class TrackApriltag extends CommandBase{
         omegaController.reset(robotPose.getRotation().getRadians());
         xController.reset(robotPose.getX());
         xController.reset(robotPose.getY());
+        var cameraRes = m_camera.getLatestResult();
+        if (cameraRes.hasTargets()) {
+            m_lastTarget = cameraRes.getBestTarget();
+            tagToChase =  m_lastTarget.getFiducialId();
+        } else {
+            m_lastTarget = null;
+        }
+        
     }
 
     @Override
@@ -113,7 +122,7 @@ public class TrackApriltag extends CommandBase{
         if (cameraRes.hasTargets()) {
             var targetOpt = cameraRes.getTargets().stream()
                 .filter(t -> t.getFiducialId() == tagToChase) 
-                .filter(t -> t.equals(m_lastTarget) && t.getPoseAmbiguity() <= 0.2)
+                .filter(t -> t.equals(m_lastTarget))
                 .findFirst();
             if (targetOpt.isPresent()) {
                 var target = targetOpt.get();
@@ -122,13 +131,15 @@ public class TrackApriltag extends CommandBase{
                 var camToTarget = target.getBestCameraToTarget();
                 var targetPose = cameraPose.transformBy(camToTarget);
                 var goalPose = targetPose.transformBy(goalPositions[m_GoalToChase]).toPose2d();
+                SmartDashboard.putNumber("goal X", goalPose.getX());
+                SmartDashboard.putNumber("goal Y", goalPose.getY());
+                SmartDashboard.putNumber("goal Omega", goalPose.getRotation().getRadians());
+                
 
                 xController.setGoal(goalPose.getX());
                 yController.setGoal(goalPose.getY());
                 omegaController.setGoal(goalPose.getRotation().getRadians());
             }
-
-
         }
         
         if (m_lastTarget == null) {
@@ -138,22 +149,24 @@ public class TrackApriltag extends CommandBase{
             if (xController.atGoal()){
                 xSpeed = 0;
             }
-            var ySpeed = xController.calculate(robotPose2d.getY());
-            if (xController.atGoal()){
+            var ySpeed = yController.calculate(robotPose2d.getY());
+            if (yController.atGoal()){
                 ySpeed = 0;
             }
-            var omegaSpeed = xController.calculate(robotPose2d.getRotation().getRadians());
-            if (xController.atGoal()){
+            var omegaSpeed = omegaController.calculate(robotPose2d.getRotation().getRadians());
+            if (omegaController.atGoal()){
                 omegaSpeed = 0;
             }
             m_driveSubsystem.drive(xSpeed, ySpeed, omegaSpeed, true, false);
+            SmartDashboard.putNumber("X Speed apriltag", xSpeed);
         }
     }
+
     @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
         m_driveSubsystem.drive(0, 0, 0, false, false);
-    }   
+    } 
 
     public void setGoalToChase(int goal){
         m_GoalToChase = goal;

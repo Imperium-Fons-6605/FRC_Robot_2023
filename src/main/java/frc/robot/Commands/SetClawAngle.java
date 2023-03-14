@@ -5,6 +5,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.ClawSubsystem;
 
 public class SetClawAngle extends CommandBase{
+    /* 
     private int m_clawLevel;
     private ClawSubsystem m_claw = RobotContainer.m_clawSubsystem;
 
@@ -22,4 +23,5 @@ public class SetClawAngle extends CommandBase{
     public boolean isFinished() {
         return RobotContainer.m_clawSubsystem.getController().atGoal();
     }
+    */
 }

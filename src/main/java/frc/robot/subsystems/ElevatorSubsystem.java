@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.RobotContainer;
+import frc.robot.Util.Constants.ClawConstants;
 import frc.robot.Util.Constants.ElevatorConstants;
 import frc.robot.Util.Constants.OIConstants;
 
@@ -28,7 +29,6 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
         ElevatorConstants.kElevatorVVoltSecperCm);
     private final SlewRateLimiter m_dirLimiter = new SlewRateLimiter(ElevatorConstants.kDirectionSlewRate);
 
-    private boolean isManual = false;
     private int m_elevatorLevel = 0;
 
     public ElevatorSubsystem() {
@@ -66,6 +66,7 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
         SmartDashboard.putData(new InstantCommand(() -> m_encoder.setPosition(0)));
         SmartDashboard.putNumber("Elevator P", ElevatorConstants.kElevatorP);
         SmartDashboard.putNumber("Elevator D", ElevatorConstants.kElevatorD);
+        enable();
     }
 
     @Override
@@ -93,7 +94,7 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
     }
     */
     public void setLevel(int level){
-        if (isManual != true){
+        if (OIConstants.isManual != true){
             m_elevatorLevel = level;
             switch (m_elevatorLevel){
                 case 0: 
@@ -103,7 +104,7 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
                     setGoal(30);
                     break;
                 case 2:
-                    setGoal(70);
+                    setGoal(80);
                     break;
             }
             enable();
@@ -115,26 +116,25 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
      public void periodic() {
         super.periodic();
         SmartDashboard.putNumber("Elevator measurment", getMeasurement());
-         if (isManual){
-            double output = 0.3 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getLeftY(), OIConstants.kDriveDeadband));
+         if (OIConstants.isManual){
+            double output = 0.4 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getLeftY(), OIConstants.kDriveDeadband));
             double ratedOutput = m_dirLimiter.calculate(output);
             SmartDashboard.putNumber("Elevator Joystick", ratedOutput);
-            double forwardSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMaxHeight)/(50-ElevatorConstants.kElevatorMaxHeight);
-            double backwardsSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMinHeight)/(30 - ElevatorConstants.kElevatorMinHeight);
+            double forwardSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMaxHeight)/(70-ElevatorConstants.kElevatorMaxHeight);
+            double backwardsSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMinHeight)/(15 - ElevatorConstants.kElevatorMinHeight);
             if ((forwardSoftLimit < 1) && (ratedOutput > 0)){
-                m_masterSparkMax.set((ratedOutput * forwardSoftLimit) + 0.05);
+                m_masterSparkMax.set((ratedOutput * forwardSoftLimit) + 0.03);
             } else if ((backwardsSoftLimit < 1) && (output < 0)) {
-                m_masterSparkMax.set((ratedOutput * backwardsSoftLimit) + 0.05);
+                m_masterSparkMax.set((ratedOutput * backwardsSoftLimit)+ 0.03);
             } else {
-                m_masterSparkMax.set(ratedOutput + 0.05);
+                m_masterSparkMax.set(ratedOutput + 0.03);
             }
-            SmartDashboard.putNumber("Elevator applied output", m_masterSparkMax.getAppliedOutput());
          }
      }
 
     public void setManual(boolean manual){
-        isManual = manual;
-        if (isManual = true){
+        OIConstants.isManual = manual;
+        if (OIConstants.isManual = true){
             disable();
         } else {
             enable();
@@ -143,18 +143,19 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
 
     @Override
     protected void useOutput(double output, State setpoint) {
-        double totalOutput;
-        double feedforward = m_feedforward.calculate(setpoint.velocity);
-        totalOutput = feedforward + output;
-        /* 
-        SmartDashboard.putBoolean("Elevator At Setpoint", getController().atSetpoint());
-        SmartDashboard.putNumber("Elevator goal", getController().getGoal().position);
-        SmartDashboard.putNumber("Elevator feedforward output", feedforward);
-        SmartDashboard.putNumber("Elevator setpoint Position", setpoint.position);
-        SmartDashboard.putNumber("Elevator setpoint Velocity", setpoint.velocity);
-        SmartDashboard.putNumber("Elevator Applied output", totalOutput);
-        SmartDashboard.putNumber("Elevator PID output", output);
-        */
-        m_masterSparkMax.setVoltage(totalOutput);
+        if (!OIConstants.isManual){
+            if(!getController().atGoal()){
+                double feedforward = m_feedforward.calculate(setpoint.velocity);
+                double totalOutput = output + feedforward;
+                SmartDashboard.putBoolean("Extensor At Setpoint", getController().atGoal());
+                SmartDashboard.putNumber("Extensor velocity", setpoint.velocity);
+                SmartDashboard.putNumber("Extensor position", setpoint.position);
+                SmartDashboard.putNumber("Extensor PID Output", output);
+                SmartDashboard.putNumber("Extensor Feedforward output", feedforward);
+                m_masterSparkMax.setVoltage(totalOutput);
+            } else {
+                m_masterSparkMax.setVoltage(ElevatorConstants.kElevatorGVolts);
+            }
+        }
     }
 }
