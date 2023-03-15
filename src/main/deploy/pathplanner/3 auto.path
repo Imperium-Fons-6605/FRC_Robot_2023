@@ -129,22 +129,31 @@
     {
       "position": 0.6690909090909036,
       "names": [
-        "event",
         "GoDown"
       ]
     },
     {
       "position": 1.6581818181818055,
       "names": [
-        "event",
         "GrabCargo"
       ]
     },
     {
       "position": 3.403636363636247,
       "names": [
-        "event",
         "GoUp"
+      ]
+    },
+    {
+      "position": 1.1345454545454643,
+      "names": [
+        "ExtendClaw"
+      ]
+    },
+    {
+      "position": 2.152727272727282,
+      "names": [
+        "GoDown"
       ]
     }
   ]

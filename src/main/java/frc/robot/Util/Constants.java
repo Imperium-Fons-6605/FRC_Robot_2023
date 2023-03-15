@@ -185,26 +185,22 @@ public final class Constants {
     public static final int kClawSlaveExpulsorCANId = 15;
     public static final int kClawMasterExpulsorCANId = 16;
 
-    public static final double kWristPulleyDiameter = 6.5; //cm
-    public static final double kWristPulleyCircumference = kWristPulleyDiameter * Math.PI; 
-    public static final double kWristEncoderCPR = 1092;
-
     public static final int kWristMotorReduction = 80 * (28/15);
     //public static final double kWristEncoderPositionFactor = (2 * Math.PI) / (kWristEncoderCPR *  kWristMotorReduction);
-    public static final double kWristEncoderPositionFactor = (2 * Math.PI) / kWristMotorReduction;
+    public static final double kWristEncoderPositionFactor = (2 * Math.PI);
     public static final double kWristEncoderPositionOffset = 2.31;
 
 
-    public static final double kClawAngleP = 1;
+    public static final double kClawAngleP = 10;
     public static final double kClawAngleI = 0;
     public static final double kClawAngleD = 0;
 
-    public static final double kClawSVolts = 0.2;
-    public static final double kClawGVolts = 4;
-    public static final double kClawVVoltSecPerRad = 0.1;
+    public static final double kClawSVolts = 0.4;
+    public static final double kClawGVolts = 1;
+    public static final double kClawVVoltSecPerRad = 1.2;
 
-    public static final double kClawMaxVelocityRadPerSec = 1;
-    public static final double kClawMaxAccelerationRadPerSecSquared = 1;
+    public static final double kClawMaxVelocityRadPerSec = Math.PI / 1.5;
+    public static final double kClawMaxAccelerationRadPerSecSquared = Math.PI/1.5;
 
     public static final double kWristMaxRotationRad = 2.5;
     public static final double kWristMinRotationRad = -0.37;  
@@ -246,8 +242,8 @@ public final class Constants {
     public static final String kDriverControllerType = "PS4";
     public static final int kDriverControllerPort = 0;
     public static final int kCommandsControllerPort = 1;
-    public static final double kDriveDeadband = 0.05;
-    public static boolean isManual = true;
+    public static final double kDriveDeadband = 0.1;
+    public static boolean isManual = false;
 
     public static final int kLogitechLeftYAxis = 1;
     public static final int kLogitechLeftXAxis = 0;

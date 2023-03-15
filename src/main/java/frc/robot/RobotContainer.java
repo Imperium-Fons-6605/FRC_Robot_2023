@@ -32,14 +32,14 @@ public class RobotContainer {
   public static final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   public static final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
   public static final ExtensorSubsystem m_extensorSubsystem = new ExtensorSubsystem();
-  //public static final ClawSubsystem m_clawSubsystem = new ClawSubsystem();
-  public static final VisionSubsystem m_visionSubsystem = new VisionSubsystem();
+  public static final ClawSubsystem m_clawSubsystem = new ClawSubsystem();
+  //public static final VisionSubsystem m_visionSubsystem = new VisionSubsystem();
 
   //Comands
   public static final Autos m_autosFactory = new Autos();
   private SendableChooser<Integer> m_positionChooser = new SendableChooser<>();
   private SendableChooser<Boolean> m_onBalanceChooser = new SendableChooser<>();
-  private TrackApriltag m_trackApriltagCommand = new TrackApriltag();
+  //private TrackApriltag m_trackApriltagCommand = new TrackApriltag();
   //Joysticks
   public static final CommandXboxController m_XboxCommandsController = new CommandXboxController(OIConstants.kCommandsControllerPort);
   public static final CommandPS4Controller m_PS4DriverController = new CommandPS4Controller(OIConstants.kDriverControllerPort);
@@ -51,10 +51,11 @@ public class RobotContainer {
 
 
   public RobotContainer() {
-    AutoConstants.kEventMap.put("GoDown", new SetElevatorLevel(0).alongWith(new SetExtensorLevel(0)));
-    AutoConstants.kEventMap.put("GoUp", new SetElevatorLevel(2).alongWith(new SetExtensorLevel(2)));
-    //AutoConstants.kEventMap.put("PutUpCargo", new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(-0.5)).withTimeout(1).andThen(new InstantCommand(() ->m_clawSubsystem.setClawPercentOutput(0))));
-    //AutoConstants.kEventMap.put("GrabCargo", new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0.5)).withTimeout(1).andThen(new InstantCommand(() ->m_clawSubsystem.setClawPercentOutput(0))));
+    AutoConstants.kEventMap.put("GoDown", new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(0))));
+    AutoConstants.kEventMap.put("GoUp", new InstantCommand(() -> m_elevatorSubsystem.setLevel(1)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(1))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(1))));
+    AutoConstants.kEventMap.put("PutUpCargo", new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(-0.3)).withTimeout(1).andThen(new InstantCommand(() ->m_clawSubsystem.setClawPercentOutput(0))));
+    AutoConstants.kEventMap.put("GrabCargo", new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0.3)).withTimeout(1).andThen(new InstantCommand(() ->m_clawSubsystem.setClawPercentOutput(0))));
+    AutoConstants.kEventMap.put("ExtendClaw", new InstantCommand(() -> m_clawSubsystem.setLevel(3)));
     AutoConstants.kEventMap.put("Balance", new CSBalanceCommand());
     m_autosFactory.buildAutos();
     m_positionChooser.setDefaultOption("1", 1);
@@ -83,32 +84,29 @@ public class RobotContainer {
         m_driveSubsystem));
     m_PS4DriverController.R1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(true)));
     m_PS4DriverController.L1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(false)));
+    /* 
     m_PS4DriverController.povLeft().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(2)));
     m_PS4DriverController.povDown().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(1)));
     m_PS4DriverController.povRight().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(0)));
     m_PS4DriverController.R2().whileTrue(m_trackApriltagCommand);
+    */
 
     //Commands bindings
     //m_XboxCommandsController.a().onTrue(new SetElevatorLevel(0).alongWith(new SetExtensorLevel(0)));
     //m_XboxCommandsController.b().onTrue(new SetElevatorLevel(1).alongWith(new SetExtensorLevel(1)));
     //m_XboxCommandsController.y().onTrue(new SetElevatorLevel(2).alongWith(new SetExtensorLevel(2)));
-    /*
-    m_XboxCommandsController.a().onTrue(new InstantCommand(() -> m_extensorSubsystem.setExtension(0)));
-    m_XboxCommandsController.b().onTrue(new InstantCommand(() -> m_extensorSubsystem.setExtension(1)));
-    m_XboxCommandsController.y().onTrue(new InstantCommand(() -> m_extensorSubsystem.setExtension(2)));
-    */
-    
-    m_XboxCommandsController.a().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))));
-    m_XboxCommandsController.b().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(1)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(1))));
-    m_XboxCommandsController.y().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(2)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(2))));
+    m_XboxCommandsController.a().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(0))));
+    m_XboxCommandsController.b().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(1)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(1))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(1))));
+    m_XboxCommandsController.y().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(2)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(2))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(2))));
+    m_XboxCommandsController.rightStick().onTrue(new InstantCommand(() -> m_clawSubsystem.setLevel(3)));
     
     m_XboxCommandsController.rightBumper().onTrue(
       new InstantCommand(() -> setManual(true)).andThen(new PrintCommand("manual disabled")));
     m_XboxCommandsController.leftBumper().onTrue(
       new InstantCommand(() -> setManual(false)).andThen(new PrintCommand("manual enabled")));
-    //m_XboxCommandsController.leftTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(-0.5)));
-    //m_XboxCommandsController.rightTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0.5)));
-    //m_XboxCommandsController.leftTrigger().or(m_XboxCommandsController.rightTrigger()).onFalse(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0)));
+    m_XboxCommandsController.leftTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(-0.6)));
+    m_XboxCommandsController.rightTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0.6)));
+    m_XboxCommandsController.leftTrigger().or(m_XboxCommandsController.rightTrigger()).onFalse(new InstantCommand(() -> m_clawSubsystem.setClawPercentOutput(0)));
   }
 
 

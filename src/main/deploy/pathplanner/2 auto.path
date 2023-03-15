@@ -18,10 +18,11 @@
       "stopEvent": {
         "names": [
           "GoUp",
-          "PutUpCargo"
+          "PutUpCargo",
+          "GoDown"
         ],
         "executionBehavior": "sequential",
-        "waitBehavior": "none",
+        "waitBehavior": "after",
         "waitTime": 0
       }
     },

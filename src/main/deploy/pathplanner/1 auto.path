@@ -17,12 +17,38 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "GoUp",
+          "GoUp"
+        ],
+        "executionBehavior": "sequential",
+        "waitBehavior": "after",
+        "waitTime": 1.5
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.7935463685496906,
+        "y": 4.419558375540593
+      },
+      "prevControl": {
+        "x": 1.7537305273286035,
+        "y": 4.432830322614288
+      },
+      "nextControl": {
+        "x": 1.9320459882853689,
+        "y": 4.373391835628701
+      },
+      "holonomicAngle": 178.97696981133217,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": true,
+      "stopEvent": {
+        "names": [
           "PutUpCargo"
         ],
         "executionBehavior": "sequential",
-        "waitBehavior": "none",
-        "waitTime": 0
+        "waitBehavior": "after",
+        "waitTime": 1.0
       }
     },
     {
@@ -106,8 +132,8 @@
         "y": 3.842313875783243
       },
       "prevControl": {
-        "x": 2.472479352947293,
-        "y": 4.951553298256383
+        "x": 2.3509681456448996,
+        "y": 4.89734847019363
       },
       "nextControl": null,
       "holonomicAngle": 179.31108371508208,
@@ -119,9 +145,9 @@
         "names": [
           "PutUpCargo"
         ],
-        "executionBehavior": "parallel",
-        "waitBehavior": "none",
-        "waitTime": 0
+        "executionBehavior": "sequential",
+        "waitBehavior": "after",
+        "waitTime": 1.0
       }
     }
   ],
@@ -136,15 +162,21 @@
       ]
     },
     {
-      "position": 2.1236363636363507,
+      "position": 2.9236363636363345,
       "names": [
         "GrabCargo"
       ]
     },
     {
-      "position": 3.5781818181818053,
+      "position": 4.363636363636373,
       "names": [
         "GoUp"
+      ]
+    },
+    {
+      "position": 2.181818181818098,
+      "names": [
+        "ExtendClaw"
       ]
     }
   ]

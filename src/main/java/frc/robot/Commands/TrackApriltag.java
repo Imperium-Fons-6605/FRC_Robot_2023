@@ -21,6 +21,7 @@ import frc.robot.Util.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class TrackApriltag extends CommandBase{
+    /* 
     private final TrapezoidProfile.Constraints XConstraints = new Constraints(
         VisionConstants.kMaxXVelocity, 
         VisionConstants.kMaxXAcceleration);
@@ -97,7 +98,6 @@ public class TrackApriltag extends CommandBase{
             isFinished[1] = true;
             isFinished[2] = true;
         }
-        */
         var robotPose = m_robotPoserProvider.get();
         omegaController.reset(robotPose.getRotation().getRadians());
         xController.reset(robotPose.getX());
@@ -171,4 +171,5 @@ public class TrackApriltag extends CommandBase{
     public void setGoalToChase(int goal){
         m_GoalToChase = goal;
     }
+    */
 }
