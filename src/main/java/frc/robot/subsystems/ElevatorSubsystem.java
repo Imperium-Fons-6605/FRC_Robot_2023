@@ -30,6 +30,8 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
     private final SlewRateLimiter m_dirLimiter = new SlewRateLimiter(ElevatorConstants.kDirectionSlewRate);
 
     private int m_elevatorLevel = 0;
+    private int m_midLevel = 45;
+    private int m_portalLevel = 0;
 
     public ElevatorSubsystem() {
         super(new ProfiledPIDController(
@@ -73,38 +75,21 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
     protected double getMeasurement() {
         return m_encoder.getPosition();
     }
-    /* 
-    public void goUp(){
-        if (m_elevatorLevel < 2){
-            m_elevatorLevel++;
-            setSetpoint();
-        }
-    }
-
-    public void goDown(){
-        if (m_elevatorLevel > 0){
-            m_elevatorLevel--;
-            setSetpoint();
-        }
-    }
-
-    public void setLevel(int level){
-        m_elevatorLevel = level;
-        setSetpoint();
-    }
-    */
     public void setLevel(int level){
         if (OIConstants.isManual != true){
             m_elevatorLevel = level;
             switch (m_elevatorLevel){
                 case 0: 
-                    setGoal(0);
+                    setGoal(-1);
                     break;
                 case 1: 
-                    setGoal(30);
+                    setGoal(m_midLevel);
                     break;
                 case 2:
                     setGoal(80);
+                    break;
+                case 3:
+                    setGoal(m_portalLevel);
                     break;
             }
             enable();
@@ -132,15 +117,17 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
          }
      }
 
-    public void setManual(boolean manual){
-        OIConstants.isManual = manual;
-        if (OIConstants.isManual = true){
-            disable();
-        } else {
-            enable();
+    public void setIsCargoCube(boolean pIsCargoCube){
+        if (pIsCargoCube){
+            m_midLevel = 45;
+            m_portalLevel = 0;
+            LEDSubsystem.getInstance().setCustomColor(255, 255, 255);
+        } else{
+            m_midLevel = 60;
+            m_portalLevel = 80;
+            LEDSubsystem.getInstance().setCustomColor(150, 255, 255);
         }
     }
-
     @Override
     protected void useOutput(double output, State setpoint) {
         if (!OIConstants.isManual){

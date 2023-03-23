@@ -157,13 +157,21 @@ public class DriveSubsystem extends SubsystemBase {
     */
 }
 
+  /**
+   * Method for reducing velocity depending on current voltage power, 
+   * with a minimum power of 20%
+   * @return Max percent power (1 = 100%)
+   */
   public double getVoltagePot(){
     double currentVoltagePot;
+    
+    //Filters voltage current to reduct noisy signal due voltage peaks
     tmpVoltagePot = voltageFilter.calculate(VoltagePot);
     if (isVelocityReduction == true){
       tmpVoltagePot *= 0.3; 
     }
 
+    //Clamping values between 1 and 0.2
     if (tmpVoltagePot > 1){
       currentVoltagePot =  1;
     } else if (tmpVoltagePot < 0.2) {
@@ -171,6 +179,8 @@ public class DriveSubsystem extends SubsystemBase {
     } else {
       currentVoltagePot = VoltagePot;
     }
+
+    //Reduce P constant for turning PID, 
     if ((VoltagePot < 7.5) & !turning_third_flag) {
       for (MAXSwerveModule module: SwerveModules){
         module.getTurningPIDController().setP(0.15);
@@ -198,6 +208,10 @@ public class DriveSubsystem extends SubsystemBase {
     return currentVoltagePot;
   }
 
+  /**
+   * Reducts max chasis power in order to increase driver accuracy
+   * @param reductVelocity If should reduct velocity
+   */
   public void reductVelocity(boolean reductVelocity){
     isVelocityReduction = reductVelocity;
   }

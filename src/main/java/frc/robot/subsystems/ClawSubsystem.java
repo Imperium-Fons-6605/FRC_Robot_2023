@@ -17,8 +17,6 @@ import frc.robot.Util.Constants.OIConstants;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FollowerType;
-import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -26,9 +24,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class ClawSubsystem extends ProfiledPIDSubsystem{
     private final CANSparkMax m_angleSparkMax = new CANSparkMax(ClawConstants.kClawAngleCANId, MotorType.kBrushless);
-    //private final VictorSPX m_angleVictor = new VictorSPX(ClawConstants.kClawAngleCANId);
-    private final VictorSPX m_masterExpulsorVictor = new VictorSPX(ClawConstants.kClawMasterExpulsorCANId);
-    private final VictorSPX m_slaveExpulsorVictor = new VictorSPX(ClawConstants.kClawSlaveExpulsorCANId);
+    private final CANSparkMax m_ExpulsorSparkMax = new CANSparkMax(ClawConstants.kClawExpulsorCANId, MotorType.kBrushless);
+    private final RelativeEncoder m_ExpulsorEncoder = m_ExpulsorSparkMax.getEncoder();
     //private final RelativeEncoder m_angleEncoder = m_angleSparkMax.getEncoder();
     private final DutyCycleEncoder m_angleEncoder = new DutyCycleEncoder(0);
 
@@ -38,6 +35,13 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
         ClawConstants.kClawVVoltSecPerRad);
     
     private int m_clawLevel = 0;
+    private double m_grabPercentOutput = 0.4;
+    private double m_putPercentOutput = 1;
+    private int m_expulseDirection = 1;
+    private double m_midLevel = 0.8;
+    private double m_highLevel = 1;
+    private double m_grabLevel = -0.18;
+    private double m_portalLevel = 0.8;
 
     public ClawSubsystem() {
         super(new ProfiledPIDController(
@@ -55,9 +59,8 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
         m_angleSparkMax.setSmartCurrentLimit(20);
         m_angleSparkMax.burnFlash();
         m_angleEncoder.setDistancePerRotation(-ClawConstants.kWristEncoderPositionFactor);
-        m_masterExpulsorVictor.setInverted(true);
-        m_slaveExpulsorVictor.setInverted(false);
-        m_slaveExpulsorVictor.follow(m_masterExpulsorVictor,FollowerType.PercentOutput);
+        m_ExpulsorSparkMax.setInverted(true);
+        m_ExpulsorEncoder.setVelocityConversionFactor(ClawConstants.kExpulsorEncoderVelocityFactor);
         getController().setTolerance(0.02);
         getController().enableContinuousInput(-Math.PI, Math.PI);
     }
@@ -71,6 +74,9 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
     @Override
     public void periodic() {
         super.periodic();
+        SmartDashboard.putNumber("ClawAppliedOutput", m_ExpulsorSparkMax.getAppliedOutput());
+        SmartDashboard.putNumber("Expulsor Encoder Velocity", m_ExpulsorEncoder.getVelocity());
+
 
 
         SmartDashboard.putNumber("Claw measurment", getMeasurement());
@@ -93,7 +99,6 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
             SmartDashboard.putNumber("Claw Joystick", output);
             SmartDashboard.putNumber("Claw kG", (0.4 * Math.cos(getMeasurement())));
          }
-         SmartDashboard.putNumber("Claw applied output", m_angleSparkMax.getOutputCurrent());
 
          /*
          if (m_clawLevel == 0){
@@ -110,16 +115,19 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
             SmartDashboard.putNumber("Elevator level", m_clawLevel);
             switch (m_clawLevel){
                 case 0: 
-                    setGoal(2);
+                    setGoal(2.55);
                     break;
                 case 1: 
-                    setGoal(0);
+                    setGoal(m_midLevel);
                     break;
                 case 2:
-                    setGoal(0.4);
+                    setGoal(m_highLevel);
                     break;
                 case 3:
-                    setGoal(-0.45);
+                    setGoal(m_portalLevel);
+                    break;
+                case 4:
+                    setGoal(m_grabLevel);
                     break;
 
             }
@@ -127,14 +135,6 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
         }
     }
 
-    public void setManual(boolean manual){
-        OIConstants.isManual = manual;
-        if (OIConstants.isManual = true){
-            disable();
-        } else {
-            enable();
-        }
-    }
 
     @Override
     protected void useOutput(double output, State setpoint) {
@@ -155,7 +155,31 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
         }
     }
 
-    public void setClawPercentOutput(double percentOutput){
-        m_masterExpulsorVictor.set(ControlMode.PercentOutput, percentOutput);
+     public void setIsCargoCube(boolean pIsCargoCube){
+        if (pIsCargoCube){
+            m_midLevel = 0.8;
+            m_highLevel = 0.6;
+            m_grabPercentOutput = 0.6;
+            m_expulseDirection = 1;
+            m_grabLevel = -0.15;
+            m_portalLevel = 1.2;
+        } else{                                                                                                                                                                                                                                                                                                                                                                                                     
+            m_midLevel= 0.4;
+            m_highLevel = 0.5;
+            m_grabPercentOutput = 0.6;
+            m_expulseDirection = -1;
+            m_grabLevel = 0.03;
+            m_portalLevel = 0.3;
+        }
+    }
+
+    public void grabCargo(){
+        m_ExpulsorSparkMax.set(m_grabPercentOutput * m_expulseDirection);
+    }
+    public void putCargo(){
+        m_ExpulsorSparkMax.set(-m_putPercentOutput * m_expulseDirection);
+    }
+    public void stopClaw(){
+        m_ExpulsorSparkMax.set(0);
     }
 }

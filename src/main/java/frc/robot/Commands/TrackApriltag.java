@@ -21,7 +21,7 @@ import frc.robot.Util.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class TrackApriltag extends CommandBase{
-    /* 
+    
     private final TrapezoidProfile.Constraints XConstraints = new Constraints(
         VisionConstants.kMaxXVelocity, 
         VisionConstants.kMaxXAcceleration);
@@ -55,6 +55,7 @@ public class TrackApriltag extends CommandBase{
     private int tagToChase = 1;
     private int m_GoalToChase = 1;
     private PhotonTrackedTarget m_lastTarget;
+    private boolean[] isFinished;
 
     private final ProfiledPIDController xController = 
         new ProfiledPIDController(
@@ -75,6 +76,10 @@ public class TrackApriltag extends CommandBase{
             VisionConstants.kOmegaControllerD, OmegaConstraints);
 
     public TrackApriltag(){
+        isFinished =  new boolean[3];
+        isFinished[0] = false;
+        isFinished[1] = false;
+        isFinished[2] = false;
         m_camera = RobotContainer.m_visionSubsystem.getCamera();
         m_driveSubsystem = RobotContainer.m_driveSubsystem;
         m_robotPoserProvider = RobotContainer.m_driveSubsystem::getPose;
@@ -90,7 +95,6 @@ public class TrackApriltag extends CommandBase{
     @Override
     public void initialize() {
         super.initialize();
-        /* 
         if (m_camera.getLatestResult().hasTargets()) {
             tagToChase =  m_camera.getLatestResult().getBestTarget().getFiducialId();
         } else {
@@ -148,14 +152,17 @@ public class TrackApriltag extends CommandBase{
             var xSpeed = xController.calculate(robotPose2d.getX());
             if (xController.atGoal()){
                 xSpeed = 0;
+                isFinished[0] = true;
             }
             var ySpeed = yController.calculate(robotPose2d.getY());
             if (yController.atGoal()){
                 ySpeed = 0;
+                isFinished[1] = true;
             }
             var omegaSpeed = omegaController.calculate(robotPose2d.getRotation().getRadians());
             if (omegaController.atGoal()){
                 omegaSpeed = 0;
+                isFinished[2] = true;
             }
             m_driveSubsystem.drive(xSpeed, ySpeed, omegaSpeed, true, false);
             SmartDashboard.putNumber("X Speed apriltag", xSpeed);
@@ -171,5 +178,12 @@ public class TrackApriltag extends CommandBase{
     public void setGoalToChase(int goal){
         m_GoalToChase = goal;
     }
-    */
+
+    @Override
+    public boolean isFinished() {
+        if((isFinished[0] = true) && (isFinished[1] = true) && (isFinished[2] = true)){
+            return true;
+        }
+        return false;
+    }
 }

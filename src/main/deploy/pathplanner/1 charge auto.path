@@ -64,7 +64,8 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "Balance"
+          "Balance",
+          "ExtendClaw"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",

@@ -29,6 +29,8 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
     private final SlewRateLimiter m_rateLimiter = new SlewRateLimiter(ExtensorConstants.kDirectionSlewRate);
 
     private int m_extensorLevel = 0;
+    private int m_midLevel = 10;
+    private int m_highLevel = 35;
 
 
     public ExtensorSubsystem() {
@@ -68,10 +70,13 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
                     setGoal(0);
                     break;
                 case 1: 
-                    setGoal(15);
+                    setGoal(m_midLevel);
                     break;
                 case 2:
-                    setGoal(37);
+                    setGoal(m_highLevel);
+                    break;
+                case 3:
+                    setGoal(0);
                     break;
             }
         }
@@ -97,13 +102,13 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
             }
          }
      }
-
-    public void setManual(boolean manual){
-        OIConstants.isManual = manual;
-        if (OIConstants.isManual = true){
-            disable();
-        } else {
-            enable();
+    public void setIsCargoCube(boolean pIsCargoCube){
+        if (pIsCargoCube){
+            m_midLevel = 10;
+            m_highLevel = 35;
+        } else{
+            m_midLevel= 10;
+            m_highLevel = 37;
         }
     }
 

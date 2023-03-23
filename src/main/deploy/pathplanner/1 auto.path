@@ -17,38 +17,14 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "GoUp"
+          "GoUp",
+          "WaitForElevator",
+          "PutCargo",
+          "WaitForIntake"
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "after",
         "waitTime": 1.5
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 1.7935463685496906,
-        "y": 4.419558375540593
-      },
-      "prevControl": {
-        "x": 1.7537305273286035,
-        "y": 4.432830322614288
-      },
-      "nextControl": {
-        "x": 1.9320459882853689,
-        "y": 4.373391835628701
-      },
-      "holonomicAngle": 178.97696981133217,
-      "isReversal": false,
-      "velOverride": null,
-      "isLocked": false,
-      "isStopPoint": true,
-      "stopEvent": {
-        "names": [
-          "PutUpCargo"
-        ],
-        "executionBehavior": "sequential",
-        "waitBehavior": "after",
-        "waitTime": 1.0
       }
     },
     {
@@ -143,7 +119,7 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "PutUpCargo"
+          "PutCargo"
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "after",
@@ -158,25 +134,44 @@
     {
       "position": 0.4945454545454681,
       "names": [
-        "GoDown"
+        "GoDown",
+        "setCube"
       ]
     },
     {
-      "position": 2.9236363636363345,
+      "position": 2.38545454545455,
       "names": [
         "GrabCargo"
       ]
     },
     {
-      "position": 4.363636363636373,
+      "position": 3.4327272727272677,
       "names": [
         "GoUp"
       ]
     },
     {
-      "position": 2.181818181818098,
+      "position": 0.9890909090909511,
       "names": [
         "ExtendClaw"
+      ]
+    },
+    {
+      "position": 2.2981818181818197,
+      "names": [
+        "GoDown"
+      ]
+    },
+    {
+      "position": 1.9490909090909059,
+      "names": [
+        "StopIntake"
+      ]
+    },
+    {
+      "position": 0.01,
+      "names": [
+        "StopIntake"
       ]
     }
   ]

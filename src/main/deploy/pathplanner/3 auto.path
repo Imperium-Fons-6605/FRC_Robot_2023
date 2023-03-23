@@ -7,8 +7,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.117980156074434,
-        "y": 0.6403856459638727
+        "x": 2.3238183994199653,
+        "y": 0.7089983937457166
       },
       "holonomicAngle": 179.37401238038998,
       "isReversal": false,
@@ -18,7 +18,9 @@
       "stopEvent": {
         "names": [
           "GoUp",
-          "PutUpCargo"
+          "WaitForElevator",
+          "PutCargo",
+          "WaitForIntake"
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "none",
@@ -81,12 +83,12 @@
         "y": 0.7661756835639195
       },
       "prevControl": {
-        "x": 4.771006403639055,
-        "y": 0.7661756835639195
+        "x": 4.770250875337197,
+        "y": 0.8009464022227427
       },
       "nextControl": {
-        "x": 3.0321894473993796,
-        "y": 0.7661756835639195
+        "x": 3.444493279856745,
+        "y": 0.7433047676366398
       },
       "holonomicAngle": -53.13010235415594,
       "isReversal": false,
@@ -106,8 +108,8 @@
         "y": 1.6238350308369651
       },
       "prevControl": {
-        "x": 2.3809956892381683,
-        "y": 0.5603374402183889
+        "x": 2.826978549820152,
+        "y": 0.491724692436545
       },
       "nextControl": null,
       "holonomicAngle": -179.16968451374206,
@@ -117,7 +119,7 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "PutUpCargo"
+          "PutCargo"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
@@ -127,13 +129,13 @@
   ],
   "markers": [
     {
-      "position": 0.6690909090909036,
+      "position": 0.2327272727273011,
       "names": [
         "GoDown"
       ]
     },
     {
-      "position": 1.6581818181818055,
+      "position": 1.629090909090899,
       "names": [
         "GrabCargo"
       ]
@@ -151,9 +153,21 @@
       ]
     },
     {
-      "position": 2.152727272727282,
+      "position": 2.1236363636363667,
       "names": [
         "GoDown"
+      ]
+    },
+    {
+      "position": 0.01,
+      "names": [
+        "StopIntake"
+      ]
+    },
+    {
+      "position": 1.6872727272727224,
+      "names": [
+        "StopIntake"
       ]
     }
   ]

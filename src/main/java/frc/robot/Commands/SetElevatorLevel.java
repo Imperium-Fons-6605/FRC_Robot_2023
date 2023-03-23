@@ -3,6 +3,7 @@ package frc.robot.Commands;
 import com.pathplanner.lib.PathPlannerTrajectory.StopEvent.ExecutionBehavior;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.ElevatorSubsystem;

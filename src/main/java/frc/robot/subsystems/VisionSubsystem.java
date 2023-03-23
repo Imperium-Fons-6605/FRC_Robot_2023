@@ -29,6 +29,8 @@ public class VisionSubsystem {
             DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
             m_photonPoseEstimator = null;
         }
+        m_camera.setDriverMode(false);
+        m_camera.getLatestResult();
     }
 
     /**

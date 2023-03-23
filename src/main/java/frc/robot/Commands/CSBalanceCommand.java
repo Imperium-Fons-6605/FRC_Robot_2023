@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Util.Constants.AutoConstants;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class CSBalanceCommand extends CommandBase{
@@ -37,19 +38,26 @@ public class CSBalanceCommand extends CommandBase{
     }
     */
 
-    if (Math.abs(X_drivePower) > 0.4) {
-      X_drivePower = Math.copySign(0.4, X_drivePower);
+    if (Math.abs(X_drivePower) > 0.2) {
+      X_drivePower = Math.copySign(0.2, X_drivePower);
     }
 
     m_DriveSubsystem.drive(X_drivePower,0, 0, true, true);;
-    
+    /* 
     SmartDashboard.putNumber("X_Current Angle", X_currentAngle);
     SmartDashboard.putNumber("X_Error", X_error);
     SmartDashboard.putNumber("X_Drive Power", X_drivePower);
+    */
     if (Math.abs(X_error) < AutoConstants.kBalanceAngleTresholdDegrees) {
       m_DriveSubsystem.setX();
       isDocked = true;
+      LEDSubsystem.getInstance().setRainbow();
+    } else{
+      LEDSubsystem.getInstance().setCustomColor(0,255,255);
+
     }
+   
+
   }
 
   @Override

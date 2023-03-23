@@ -11,6 +11,7 @@ public class LEDSubsystem extends SubsystemBase{
     private int m_Saturation = 255;
     private int m_Value = 255;
     private LEDMode m_mode = LEDMode.CUSTOM;
+    private static LEDSubsystem m_Instance;
 
     public enum LEDMode{
         RAINBOW, CUSTOM, BLINKING
@@ -19,10 +20,17 @@ public class LEDSubsystem extends SubsystemBase{
     private int m_rainbowFirstPixelHue;
     private int RGBColor;
     
-    public LEDSubsystem() {
+    private LEDSubsystem() {
         m_led.setLength(m_ledBuffer.getLength());
         m_led.setData(m_ledBuffer);
         m_led.start();
+    }
+
+    public static LEDSubsystem getInstance(){
+        if (m_Instance == null){
+            m_Instance = new LEDSubsystem();
+        }
+        return m_Instance;
     }
     @Override
     public void periodic() {

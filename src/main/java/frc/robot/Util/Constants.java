@@ -182,8 +182,7 @@ public final class Constants {
   public static final class ClawConstants{
     public static final int kClawAngleCANId = 14;
     public static final int kClawAngleEncoderDIOPort = 1;
-    public static final int kClawSlaveExpulsorCANId = 15;
-    public static final int kClawMasterExpulsorCANId = 16;
+    public static final int kClawExpulsorCANId = 15;
 
     public static final int kWristMotorReduction = 80 * (28/15);
     //public static final double kWristEncoderPositionFactor = (2 * Math.PI) / (kWristEncoderCPR *  kWristMotorReduction);
@@ -195,15 +194,17 @@ public final class Constants {
     public static final double kClawAngleI = 0;
     public static final double kClawAngleD = 0;
 
-    public static final double kClawSVolts = 0.4;
-    public static final double kClawGVolts = 1;
+    public static final double kClawSVolts = 0.3;
+    public static final double kClawGVolts = 0.8;
     public static final double kClawVVoltSecPerRad = 1.2;
 
-    public static final double kClawMaxVelocityRadPerSec = Math.PI / 1.5;
-    public static final double kClawMaxAccelerationRadPerSecSquared = Math.PI/1.5;
+    public static final double kClawMaxVelocityRadPerSec = Math.PI / 2;
+    public static final double kClawMaxAccelerationRadPerSecSquared = Math.PI/2;
 
     public static final double kWristMaxRotationRad = 2.5;
     public static final double kWristMinRotationRad = -0.37;  
+
+    public static final double kExpulsorEncoderVelocityFactor = 20 / 60;
 
 
   }
@@ -234,7 +235,7 @@ public final class Constants {
     public static final double kMaxOmegaAcceleration = 1.5;
   }
 
-  public static final class LEDSubsystem{
+  public static final class LEDConstants{
     public static final int kLEDPort = 0;
   }
 
@@ -244,6 +245,7 @@ public final class Constants {
     public static final int kCommandsControllerPort = 1;
     public static final double kDriveDeadband = 0.1;
     public static boolean isManual = false;
+    public static boolean isCargoCube = true;
 
     public static final int kLogitechLeftYAxis = 1;
     public static final int kLogitechLeftXAxis = 0;
@@ -262,7 +264,7 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final PathConstraints kAutoConstraints = new PathConstraints(2, 1);
+    public static final PathConstraints kAutoConstraints = new PathConstraints(2.5, 1);
 
     public static final HashMap<String, Command> kEventMap = new HashMap<>();
 
