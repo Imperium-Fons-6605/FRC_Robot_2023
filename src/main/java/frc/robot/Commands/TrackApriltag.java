@@ -135,9 +135,11 @@ public class TrackApriltag extends CommandBase{
                 var camToTarget = target.getBestCameraToTarget();
                 var targetPose = cameraPose.transformBy(camToTarget);
                 var goalPose = targetPose.transformBy(goalPositions[m_GoalToChase]).toPose2d();
+                /* 
                 SmartDashboard.putNumber("goal X", goalPose.getX());
                 SmartDashboard.putNumber("goal Y", goalPose.getY());
                 SmartDashboard.putNumber("goal Omega", goalPose.getRotation().getRadians());
+                */
                 
 
                 xController.setGoal(goalPose.getX());

@@ -2,15 +2,15 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.7977873330924976,
-        "y": 2.755945369237385
+        "x": 1.8549646229107004,
+        "y": 1.040626674691294
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.03793195032895,
-        "y": 2.7673808272010265
+        "x": 2.198028361819919,
+        "y": 0.7547402256002796
       },
-      "holonomicAngle": 180.0,
+      "holonomicAngle": 0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -19,75 +19,28 @@
         "names": [
           "GoUp",
           "WaitForElevator",
-          "putCargo",
+          "PutCargo",
           "WaitForIntake"
         ],
         "executionBehavior": "sequential",
-        "waitBehavior": "after",
-        "waitTime": 0
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 3.124300456874808,
-        "y": 2.755945369237385
-      },
-      "prevControl": {
-        "x": 2.895591297601996,
-        "y": 2.7673808272010265
-      },
-      "nextControl": {
-        "x": 3.2285090402839467,
-        "y": 2.750734940066928
-      },
-      "holonomicAngle": 179.2926806314557,
-      "isReversal": false,
-      "velOverride": 0.2,
-      "isLocked": false,
-      "isStopPoint": false,
-      "stopEvent": {
-        "names": [],
-        "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
       }
     },
     {
       "anchorPoint": {
-        "x": 4.199233505457025,
-        "y": 2.755945369237385
+        "x": 5.399956591639289,
+        "y": 0.8347884313457634
       },
       "prevControl": {
-        "x": 4.170644860547923,
-        "y": 2.7530865047464745
+        "x": 2.5639630166564182,
+        "y": 0.8347884313457634
       },
       "nextControl": {
-        "x": 4.227822150366127,
-        "y": 2.758804233728296
+        "x": 6.399956591639283,
+        "y": 0.8347884313457634
       },
-      "holonomicAngle": 180.0,
-      "isReversal": false,
-      "velOverride": 0.2,
-      "isLocked": false,
-      "isStopPoint": false,
-      "stopEvent": {
-        "names": [],
-        "executionBehavior": "parallel",
-        "waitBehavior": "none",
-        "waitTime": 0
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 6.875130668948928,
-        "y": 2.790251743128307
-      },
-      "prevControl": {
-        "x": 6.612115135785194,
-        "y": 2.778816285164666
-      },
-      "nextControl": null,
-      "holonomicAngle": -179.534190917235,
+      "holonomicAngle": 0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -98,23 +51,63 @@
         "waitBehavior": "none",
         "waitTime": 0
       }
-    }
-  ],
-  "maxVelocity": 2.0,
-  "maxAcceleration": 1.0,
-  "isReversed": null,
-  "markers": [
-    {
-      "position": 0.1527272727272702,
-      "names": [
-        "GoDown"
-      ]
     },
     {
-      "position": 0.01,
+      "anchorPoint": {
+        "x": 5.674407582766664,
+        "y": 2.5272362099645735
+      },
+      "prevControl": {
+        "x": 6.065568311908413,
+        "y": 2.477452117164714
+      },
+      "nextControl": {
+        "x": 5.045457394766431,
+        "y": 2.6072844157100588
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 2.8384140077837925,
+        "y": 2.5272362099645735
+      },
+      "prevControl": {
+        "x": 3.3415741581839797,
+        "y": 2.435752546255449
+      },
+      "nextControl": null,
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "Balance"
+        ],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "markers": [
+    {
+      "position": 0.021818181818161992,
       "names": [
-        "event",
-        "StopIntake"
+        "StopIntake",
+        "GoDown"
       ]
     }
   ]

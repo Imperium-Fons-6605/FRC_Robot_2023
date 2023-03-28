@@ -29,12 +29,19 @@ public class Autos {
     private List<PathPlannerTrajectory> m_twoChargeTrayectory;
     private List<PathPlannerTrajectory> m_threeChargeTrayectory;
 
+    private List<PathPlannerTrajectory> m_oneOnlyChargeTrayectory;
+    private List<PathPlannerTrajectory> m_twoOnlyChargeTrayectory;
+    private List<PathPlannerTrajectory> m_threeOnlyChargeTrayectory;
+
     private CommandBase m_oneAuto;
     private CommandBase m_twoAuto;
     private CommandBase m_threeAuto;
     private CommandBase m_oneChargeAuto;
     private CommandBase m_twoChargeAuto;
     private CommandBase m_threeChargeAuto;
+    private CommandBase m_oneOnlyChargeAuto;
+    private CommandBase m_twoOnlyChargeAuto;
+    private CommandBase m_threeOnlyChargeAuto;
 
     private SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
         RobotContainer.m_driveSubsystem::getPose, 
@@ -52,42 +59,64 @@ public class Autos {
         PathPlannerServer.startServer(6605);
     }
 
-    public Command getAuto (int position, boolean isBalance){
+    public Command getAuto (int position, boolean isBalance, boolean isTrayectory){
         if (m_oneAuto == null){
             System.out.println("No se han inciializado los autos");
             return null;
         } else {
-            if(!isBalance){
-                switch (position) {
-                    case 1:
+            switch (position) {
+                case 1:
+                    if (isTrayectory && !isBalance){
                         return m_oneAuto;
-                    case 2:
+                    } else if (!isTrayectory && isBalance){
+                        return m_oneOnlyChargeAuto.andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()));
+                    } else if (isTrayectory && isBalance){
+                        return m_oneAuto.andThen(m_oneChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()));
+                    } else if(!isTrayectory && !isBalance){
+                        return null;
+                    }
+                case 2:
+                    if (isTrayectory && !isBalance){
                         return m_twoAuto;
-                    case 3:
+                    } else if (!isTrayectory && isBalance){
+                        return m_twoOnlyChargeAuto.andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()));
+                    } else if (isTrayectory && isBalance){
+                        return m_twoAuto.andThen(m_twoChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()));
+                    } else if(!isTrayectory && !isBalance){
+                        return null;
+                    }
+                case 3:
+                    if (isTrayectory && !isBalance){
                         return m_threeAuto;
-                }
-            } else {
-                switch (position) {
-                    case 1:
-                        return m_oneAuto.andThen(m_oneChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()).withTimeout(2));
-                    case 2:
-                        return m_twoAuto.andThen(m_twoChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()).withTimeout(2));
-                    case 3:
-                        return m_threeAuto.andThen(m_threeChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()).withTimeout(2));
-                }
+                    } else if (!isTrayectory && isBalance){
+                        return m_threeOnlyChargeAuto.andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()));
+                    } else if (isTrayectory && isBalance){
+                        return m_threeAuto.andThen(m_threeChargeAuto).andThen(Commands.run(() ->RobotContainer.m_driveSubsystem.setX()));
+                    } else if(!isTrayectory && !isBalance){
+                        return null;
+                    }
             }
-            return new InstantCommand(() -> RobotContainer.m_driveSubsystem.drive(0.2, 0, 0, true, true)).withTimeout(3);
+            return null;
         }
     }
 
     public void buildAutos(){
-        m_oneTrayectory = PathPlanner.loadPathGroup("1 auto", AutoConstants.kAutoConstraints);
+        //m_oneTrayectory = PathPlanner.loadPathGroup("1 auto", AutoConstants.kAutoConstraints);
+        m_oneTrayectory = PathPlanner.loadPathGroup("auto taxi", AutoConstants.kAutoConstraints);
         m_twoTrayectory = PathPlanner.loadPathGroup("2 auto", AutoConstants.kAutoConstraints);
         m_threeTrayectory = PathPlanner.loadPathGroup("3 auto", AutoConstants.kAutoConstraints);
 
         m_oneChargeTrayectory = PathPlanner.loadPathGroup("1 charge auto", AutoConstants.kAutoConstraints);
+        //m_oneChargeTrayectory = PathPlanner.loadPathGroup("1 charge auto", AutoConstants.kAutoConstraints);
         m_twoChargeTrayectory = PathPlanner.loadPathGroup("2 charge auto", AutoConstants.kAutoConstraints);
         m_threeChargeTrayectory = PathPlanner.loadPathGroup("3 charge auto", AutoConstants.kAutoConstraints);
+
+        m_oneOnlyChargeTrayectory = PathPlanner.loadPathGroup("2 only charge auto", AutoConstants.kAutoConstraints);
+        m_twoOnlyChargeTrayectory = PathPlanner.loadPathGroup("2 only charge auto", AutoConstants.kAutoConstraints);
+        m_threeOnlyChargeTrayectory = PathPlanner.loadPathGroup("3 only charge auto", AutoConstants.kAutoConstraints);
+
+
+
 
         m_oneAuto =  autoBuilder.fullAuto(m_oneTrayectory);
         m_twoAuto =  autoBuilder.fullAuto(m_twoTrayectory);
@@ -96,6 +125,10 @@ public class Autos {
         m_oneChargeAuto =  autoBuilder.fullAuto(m_oneChargeTrayectory);
         m_twoChargeAuto =  autoBuilder.fullAuto(m_twoChargeTrayectory);
         m_threeChargeAuto =  autoBuilder.fullAuto(m_threeChargeTrayectory);
+
+        m_oneOnlyChargeAuto =  autoBuilder.fullAuto(m_oneOnlyChargeTrayectory);
+        m_twoOnlyChargeAuto =  autoBuilder.fullAuto(m_twoOnlyChargeTrayectory);
+        m_threeOnlyChargeAuto =  autoBuilder.fullAuto(m_threeOnlyChargeTrayectory);
     }
     
 }

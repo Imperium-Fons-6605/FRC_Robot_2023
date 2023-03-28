@@ -74,13 +74,7 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
     @Override
     public void periodic() {
         super.periodic();
-        SmartDashboard.putNumber("ClawAppliedOutput", m_ExpulsorSparkMax.getAppliedOutput());
-        SmartDashboard.putNumber("Expulsor Encoder Velocity", m_ExpulsorEncoder.getVelocity());
-
-
-
         SmartDashboard.putNumber("Claw measurment", getMeasurement());
-        SmartDashboard.putNumber("Claw applied output", m_angleSparkMax.getAppliedOutput());
          if (OIConstants.isManual){
             double output =  0.5 * (MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getRightX(), OIConstants.kDriveDeadband));
             double currentMeasurment = getMeasurement();
@@ -96,8 +90,6 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
                 m_angleSparkMax.set(output + kG);
             }
             m_angleSparkMax.set(output);
-            SmartDashboard.putNumber("Claw Joystick", output);
-            SmartDashboard.putNumber("Claw kG", (0.4 * Math.cos(getMeasurement())));
          }
 
          /*
@@ -112,7 +104,6 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
     public void setLevel(int level){
         if (OIConstants.isManual != true){
             m_clawLevel = level;
-            SmartDashboard.putNumber("Elevator level", m_clawLevel);
             switch (m_clawLevel){
                 case 0: 
                     setGoal(2.55);
@@ -141,16 +132,6 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
         if (!OIConstants.isManual){
             double feedforward = m_feedforward.calculate( getMeasurement(),setpoint.velocity);
             double totalOutput = (feedforward + output);
-            /* 
-            SmartDashboard.putBoolean("At Setpoint", getController().atSetpoint());
-            SmartDashboard.putNumber("goal", getController().getGoal().position);
-            SmartDashboard.putNumber("feedforward output", feedforward);
-            SmartDashboard.putNumber("setpoint Position", setpoint.position);
-            SmartDashboard.putNumber("setpoint Velocity", setpoint.velocity);
-            SmartDashboard.putNumber("measurment", getMeasurement());
-            SmartDashboard.putNumber("PID Output", output);
-            SmartDashboard.putNumber("Applied output", totalOutput);
-            */
             m_angleSparkMax.setVoltage(totalOutput);
         }
     }
@@ -158,18 +139,18 @@ public class ClawSubsystem extends ProfiledPIDSubsystem{
      public void setIsCargoCube(boolean pIsCargoCube){
         if (pIsCargoCube){
             m_midLevel = 0.8;
-            m_highLevel = 0.6;
+            m_highLevel = 0.7;
             m_grabPercentOutput = 0.6;
             m_expulseDirection = 1;
-            m_grabLevel = -0.15;
+            m_grabLevel = -0.1;
             m_portalLevel = 1.2;
         } else{                                                                                                                                                                                                                                                                                                                                                                                                     
-            m_midLevel= 0.4;
-            m_highLevel = 0.5;
+            m_midLevel= 0.2;
+            m_highLevel = 0.4;
             m_grabPercentOutput = 0.6;
             m_expulseDirection = -1;
-            m_grabLevel = 0.03;
-            m_portalLevel = 0.3;
+            m_grabLevel = -0.05;
+            m_portalLevel = 0.37;
         }
     }
 

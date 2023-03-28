@@ -2,15 +2,15 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.8,
-        "y": 3.84
+        "x": 1.83,
+        "y": 3.88
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2208992777471996,
-        "y": 3.5564274266922284
+        "x": 2.198028361819919,
+        "y": 3.1676218559284477
       },
-      "holonomicAngle": 179.31,
+      "holonomicAngle": 180.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -24,22 +24,22 @@
     },
     {
       "anchorPoint": {
-        "x": 3.1014295409475268,
-        "y": 3.0075254444374795
+        "x": 3.2272195785475732,
+        "y": 2.755945369237385
       },
       "prevControl": {
-        "x": 1.9693192025471065,
-        "y": 2.99608998647384
+        "x": 2.346568453160719,
+        "y": 2.773558391745121
       },
       "nextControl": {
-        "x": 3.250082911086498,
-        "y": 3.0090269936308025
+        "x": 3.798992476729604,
+        "y": 2.744509911273745
       },
-      "holonomicAngle": 180.0,
+      "holonomicAngle": 179.24615166692922,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
-      "isStopPoint": true,
+      "isStopPoint": false,
       "stopEvent": {
         "names": [],
         "executionBehavior": "parallel",
@@ -49,15 +49,15 @@
     },
     {
       "anchorPoint": {
-        "x": 5.1026346845846335,
-        "y": 2.996089986473838
+        "x": 5.331343843857446,
+        "y": 2.744509911273745
       },
       "prevControl": {
-        "x": 4.759570945675415,
-        "y": 3.0075254444374777
+        "x": 4.331343843857446,
+        "y": 2.744509911273745
       },
       "nextControl": null,
-      "holonomicAngle": 180.0,
+      "holonomicAngle": 178.60281897270355,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -74,10 +74,10 @@
   ],
   "markers": [
     {
-      "position": 0.21818181818180993,
+      "position": 0.08727272727272231,
       "names": [
-        "StopIntake",
-        "GoDown"
+        "GoDown",
+        "StopIntake"
       ]
     }
   ]

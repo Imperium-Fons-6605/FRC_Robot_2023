@@ -19,6 +19,7 @@ public class VisionSubsystem {
 
     public VisionSubsystem(){
         m_camera = new PhotonCamera(VisionConstants.kCameraName);
+        m_camera.setDriverMode(true);
         try {
             AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
             m_photonPoseEstimator =

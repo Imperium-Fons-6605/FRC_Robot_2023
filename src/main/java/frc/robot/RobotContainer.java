@@ -9,6 +9,7 @@ import frc.robot.Commands.CSBalanceCommand;
 import frc.robot.Commands.SetElevatorLevel;
 import frc.robot.Commands.SetExtensorLevel;
 import frc.robot.Commands.TrackApriltag;
+import frc.robot.Commands.TurnToAngle;
 import frc.robot.Util.Constants.AutoConstants;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.Util.Constants.OIConstants;
@@ -41,6 +42,7 @@ public class RobotContainer {
   public static final Autos m_autosFactory = new Autos();
   private SendableChooser<Integer> m_positionChooser = new SendableChooser<>();
   private SendableChooser<Boolean> m_onBalanceChooser = new SendableChooser<>();
+  private SendableChooser<Boolean> m_onTrayectoryChooser = new SendableChooser<>();
   private TrackApriltag m_trackApriltagCommand = new TrackApriltag();
   //Joysticks
   public static final CommandXboxController m_XboxCommandsController = new CommandXboxController(OIConstants.kCommandsControllerPort);
@@ -53,8 +55,9 @@ public class RobotContainer {
     AutoConstants.kEventMap.put("GrabCargo", new InstantCommand(() -> m_clawSubsystem.grabCargo()));
     AutoConstants.kEventMap.put("StopIntake", new InstantCommand(() ->m_clawSubsystem.stopClaw()));
     AutoConstants.kEventMap.put("ExtendClaw", new InstantCommand(() -> m_clawSubsystem.setLevel(4)));
-    AutoConstants.kEventMap.put("WaitForElevator", new WaitCommand(1.5));
+    AutoConstants.kEventMap.put("WaitForElevator", new WaitCommand(1.7));
     AutoConstants.kEventMap.put("WaitForIntake", new WaitCommand(1));
+    AutoConstants.kEventMap.put("WaitForClaw", new WaitCommand(1));
     AutoConstants.kEventMap.put("setCube", new InstantCommand(() -> setCargoIsCube(true)));
     AutoConstants.kEventMap.put("setCone", new InstantCommand(() -> setCargoIsCube(false)));
     AutoConstants.kEventMap.put("Balance", new CSBalanceCommand());
@@ -64,13 +67,17 @@ public class RobotContainer {
     m_positionChooser.addOption("3", 3);
     m_onBalanceChooser.addOption("Yes", true);
     m_onBalanceChooser.addOption("No", false);
+    m_onTrayectoryChooser.addOption("Yes", true);
+    m_onTrayectoryChooser.addOption("No", false);
     SmartDashboard.putData("Position Chooser", m_positionChooser);
     SmartDashboard.putData("Balance?", m_onBalanceChooser);
+    SmartDashboard.putData("Trayectory?", m_onTrayectoryChooser);
     configureButtonBindings();
   }
 
  
   private void configureButtonBindings() {
+
     //Driver bindings
     m_driveSubsystem.setDefaultCommand(
       new RunCommand(
@@ -83,17 +90,19 @@ public class RobotContainer {
     .whileTrue(new RunCommand(
         () -> m_driveSubsystem.setX(),
         m_driveSubsystem));
+    m_PS4DriverController.square().onTrue(new InstantCommand(() -> m_driveSubsystem.zeroHeading()));
     m_PS4DriverController.R1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(true)));
     m_PS4DriverController.L1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(false)));
     m_PS4DriverController.povLeft().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(2)));
     m_PS4DriverController.povDown().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(1)));
     m_PS4DriverController.povRight().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(0)));
     m_PS4DriverController.R2().whileTrue(m_trackApriltagCommand);
+    m_PS4DriverController.povUp().onTrue(new TurnToAngle(0));
+    m_PS4DriverController.povLeft().onTrue(new TurnToAngle(90));
+    m_PS4DriverController.povDown().onTrue(new TurnToAngle(180));
+    m_PS4DriverController.povRight().onTrue(new TurnToAngle(-90));
 
     //Commands bindings
-    //m_XboxCommandsController.a().onTrue(new SetElevatorLevel(0).alongWith(new SetExtensorLevel(0)));
-    //m_XboxCommandsController.b().onTrue(new SetElevatorLevel(1).alongWith(new SetExtensorLevel(1)));
-    //m_XboxCommandsController.y().onTrue(new SetElevatorLevel(2).alongWith(new SetExtensorLevel(2)));
     m_XboxCommandsController.a().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(0))));
     m_XboxCommandsController.b().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(1)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(1))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(1))));
     m_XboxCommandsController.y().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(2)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(2))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(2))));
@@ -108,7 +117,7 @@ public class RobotContainer {
 
 
   public Command getAutonomousCommand() {
-    return m_autosFactory.getAuto(m_positionChooser.getSelected(), m_onBalanceChooser.getSelected());
+    return m_autosFactory.getAuto(m_positionChooser.getSelected(), m_onBalanceChooser.getSelected(), m_onTrayectoryChooser.getSelected());
   }
   
   public void setCargoIsCube(boolean pIsCube){

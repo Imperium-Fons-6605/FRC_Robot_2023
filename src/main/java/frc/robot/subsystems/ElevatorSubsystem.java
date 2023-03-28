@@ -64,10 +64,6 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
         m_masterSparkMax.burnFlash();
 
         getController().setTolerance(2);
-
-        SmartDashboard.putData(new InstantCommand(() -> m_encoder.setPosition(0)));
-        SmartDashboard.putNumber("Elevator P", ElevatorConstants.kElevatorP);
-        SmartDashboard.putNumber("Elevator D", ElevatorConstants.kElevatorD);
         enable();
     }
 
@@ -93,8 +89,6 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
                     break;
             }
             enable();
-            SmartDashboard.putNumber("Extensor Level", m_elevatorLevel);
-            SmartDashboard.putNumber("Extensor goal", getController().getGoal().position);
         }
     }
      @Override
@@ -104,7 +98,6 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
          if (OIConstants.isManual){
             double output = 0.4 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getLeftY(), OIConstants.kDriveDeadband));
             double ratedOutput = m_dirLimiter.calculate(output);
-            SmartDashboard.putNumber("Elevator Joystick", ratedOutput);
             double forwardSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMaxHeight)/(70-ElevatorConstants.kElevatorMaxHeight);
             double backwardsSoftLimit = (getMeasurement() - ElevatorConstants.kElevatorMinHeight)/(15 - ElevatorConstants.kElevatorMinHeight);
             if ((forwardSoftLimit < 1) && (ratedOutput > 0)){
@@ -134,11 +127,6 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
             if(!getController().atGoal()){
                 double feedforward = m_feedforward.calculate(setpoint.velocity);
                 double totalOutput = output + feedforward;
-                SmartDashboard.putBoolean("Extensor At Setpoint", getController().atGoal());
-                SmartDashboard.putNumber("Extensor velocity", setpoint.velocity);
-                SmartDashboard.putNumber("Extensor position", setpoint.position);
-                SmartDashboard.putNumber("Extensor PID Output", output);
-                SmartDashboard.putNumber("Extensor Feedforward output", feedforward);
                 m_masterSparkMax.setVoltage(totalOutput);
             } else {
                 m_masterSparkMax.setVoltage(ElevatorConstants.kElevatorGVolts);

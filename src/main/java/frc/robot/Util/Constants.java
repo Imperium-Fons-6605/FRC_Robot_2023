@@ -33,10 +33,8 @@ public final class Constants {
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
-    public static final double kMaxVoltage = 11.9;
-    public static final double kMinVoltage = 9.8;
 
-    public static final double kMaxSpeedMetersPerSecond = 4.8;
+    public static final double kMaxSpeedMetersPerSecond = 8;
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
     public static final double kDirectionSlewRate = 0.9; // radians per second
@@ -187,7 +185,6 @@ public final class Constants {
     public static final int kWristMotorReduction = 80 * (28/15);
     //public static final double kWristEncoderPositionFactor = (2 * Math.PI) / (kWristEncoderCPR *  kWristMotorReduction);
     public static final double kWristEncoderPositionFactor = (2 * Math.PI);
-    public static final double kWristEncoderPositionOffset = 2.31;
 
 
     public static final double kClawAngleP = 10;
@@ -195,10 +192,10 @@ public final class Constants {
     public static final double kClawAngleD = 0;
 
     public static final double kClawSVolts = 0.3;
-    public static final double kClawGVolts = 0.8;
+    public static final double kClawGVolts = 0.4;
     public static final double kClawVVoltSecPerRad = 1.2;
 
-    public static final double kClawMaxVelocityRadPerSec = Math.PI / 2;
+    public static final double kClawMaxVelocityRadPerSec = Math.PI / 1.4;
     public static final double kClawMaxAccelerationRadPerSecSquared = Math.PI/2;
 
     public static final double kWristMaxRotationRad = 2.5;
@@ -264,14 +261,14 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final PathConstraints kAutoConstraints = new PathConstraints(2.5, 1);
+    public static final PathConstraints kAutoConstraints = new PathConstraints(1, 2);
 
     public static final HashMap<String, Command> kEventMap = new HashMap<>();
 
     //Balance Constants
     public static final double kBalanceGoalDegrees = 0;
-    public static final double kBalanceAngleTresholdDegrees = 3;
-    public static final double kBalancedDrivekP = 0.05;
+    public static final double kBalanceAngleTresholdDegrees = 5;
+    public static final double kBalancedDrivekP = 0.09;
     public static final double kBalancedDrivekD = 0.01;
     public static final TrapezoidProfile.Constraints kBalanceConstraints = new TrapezoidProfile.Constraints(
       1.0,

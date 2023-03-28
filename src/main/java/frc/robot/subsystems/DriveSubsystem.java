@@ -121,12 +121,11 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    VoltagePot = ((m_powerDistribution.getVoltage() - 9)/(12.0-9));
+    VoltagePot = ((m_powerDistribution.getVoltage() - 8)/(11.5-8));
     SmartDashboard.putNumber("Position X",getPose().getX());
     SmartDashboard.putNumber("Position Y",getPose().getY());
     SmartDashboard.putNumber("Position Rotation",getPose().getRotation().getRadians());
     SmartDashboard.putNumber("Gyro Yaw",getHeading());
-    SmartDashboard.putNumber("Gyro Roll", pigeonGyro.getRoll());
     SmartDashboard.putNumber("Gyro Pitch", pigeonGyro.getPitch());
     // Update the odometry in the periodic block
     updateOdometry();
@@ -168,7 +167,7 @@ public class DriveSubsystem extends SubsystemBase {
     //Filters voltage current to reduct noisy signal due voltage peaks
     tmpVoltagePot = voltageFilter.calculate(VoltagePot);
     if (isVelocityReduction == true){
-      tmpVoltagePot *= 0.3; 
+      tmpVoltagePot *= 0.15; 
     }
 
     //Clamping values between 1 and 0.2
@@ -177,15 +176,13 @@ public class DriveSubsystem extends SubsystemBase {
     } else if (tmpVoltagePot < 0.2) {
       currentVoltagePot =  0.2;
     } else {
-      currentVoltagePot = VoltagePot;
+      currentVoltagePot = tmpVoltagePot;
     }
-
-    //Reduce P constant for turning PID, 
+    /* 
     if ((VoltagePot < 7.5) & !turning_third_flag) {
       for (MAXSwerveModule module: SwerveModules){
         module.getTurningPIDController().setP(0.15);
         turning_third_flag = true;
-        SmartDashboard.putString("Current flag", "3");
       }
     }
 
@@ -193,7 +190,6 @@ public class DriveSubsystem extends SubsystemBase {
       for (MAXSwerveModule module: SwerveModules){
         module.getTurningPIDController().setP(0.2);
         turning_second_flag = true;
-        SmartDashboard.putString("Current flag", "2");
       }
     }
 
@@ -201,9 +197,9 @@ public class DriveSubsystem extends SubsystemBase {
       for (MAXSwerveModule module: SwerveModules){
         module.getTurningPIDController().setP(0.25);
         turning_first_flag = true;
-        SmartDashboard.putString("Current flag", "1");
       }
     }
+    */
 
     return currentVoltagePot;
   }

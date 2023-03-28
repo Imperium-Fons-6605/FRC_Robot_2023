@@ -81,13 +81,11 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
             }
         }
         enable();
-        SmartDashboard.putNumber("Extensor Level", m_extensorLevel);
     }
      @Override
      public void periodic() {
         super.periodic();
         SmartDashboard.putNumber("Extensor measurment", getMeasurement());
-        SmartDashboard.putNumber("Elevator Applied Output", m_extensorMotor.getAppliedOutput());
         if (OIConstants.isManual){
             double output = 0.35 * (-MathUtil.applyDeadband(RobotContainer.m_XboxCommandsController.getRightY(), OIConstants.kDriveDeadband));
             double ratedOutput = m_rateLimiter.calculate(output);
@@ -105,7 +103,7 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
     public void setIsCargoCube(boolean pIsCargoCube){
         if (pIsCargoCube){
             m_midLevel = 10;
-            m_highLevel = 35;
+            m_highLevel = 36;
         } else{
             m_midLevel= 10;
             m_highLevel = 37;
@@ -118,11 +116,6 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
                 if(!getController().atGoal()){
                     double feedforward = m_feedforward.calculate(setpoint.velocity);
                     double totalOutput = output + feedforward;
-                    SmartDashboard.putBoolean("Extensor At Setpoint", getController().atGoal());
-                    SmartDashboard.putNumber("Extensor velocity", setpoint.velocity);
-                    SmartDashboard.putNumber("Extensor position", setpoint.position);
-                    SmartDashboard.putNumber("Extensor PID Output", output);
-                    SmartDashboard.putNumber("Extensor Feedforward output", feedforward);
                     m_extensorMotor.setVoltage(totalOutput);
                 } else {
                     m_extensorMotor.set(0);
