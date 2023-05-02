@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVPhysicsSim;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -10,8 +11,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
@@ -54,11 +57,21 @@ public class ExtensorSubsystem extends ProfiledPIDSubsystem {
 
         getController().setTolerance(1);
         enable();
+
+        if(RobotBase.isSimulation()){
+            REVPhysicsSim.getInstance().addSparkMax(m_extensorMotor, DCMotor.getNEO(1));
+        }
     }
 
     @Override
     protected double getMeasurement() {
         return m_extensorEncoder.getPosition();
+    }
+    public double getPosition(){
+        return m_extensorEncoder.getPosition();
+    }
+    public double getVelocity(){
+        return m_extensorEncoder.getVelocity();
     }
     
 

@@ -18,6 +18,7 @@ public class VisionSubsystem {
     private PhotonPoseEstimator m_photonPoseEstimator;
 
     public VisionSubsystem(){
+        
         m_camera = new PhotonCamera(VisionConstants.kCameraName);
         m_camera.setDriverMode(true);
         try {

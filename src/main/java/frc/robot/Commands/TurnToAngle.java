@@ -9,12 +9,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Util.Constants.OIConstants;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.SwerveDrive;
 
 public class TurnToAngle extends CommandBase{
-    private final  ProfiledPIDController m_controller = new ProfiledPIDController(0.02, 0, 0, new TrapezoidProfile.Constraints(180, -180));
+    private final  ProfiledPIDController m_controller = new ProfiledPIDController(0.001, 0, 0, new TrapezoidProfile.Constraints(180, -180));
     private final SimpleMotorFeedforward m_Feedforward = new SimpleMotorFeedforward(0.1, 0.2);
-    private final DriveSubsystem driveSubsystem;
+    private final SwerveDrive driveSubsystem;
 
     public TurnToAngle(double pGoal){
         m_controller.enableContinuousInput(-180, 180);
@@ -25,7 +25,7 @@ public class TurnToAngle extends CommandBase{
 
     @Override
     public void execute() {
-        double pidOutput = m_controller.calculate(driveSubsystem.getHeading());
+        double pidOutput = m_controller.calculate(driveSubsystem.getHeadingDegrees());
         double setpoint = m_controller.getSetpoint().velocity;
         double feedforwardOutput =  m_Feedforward.calculate(setpoint);
         driveSubsystem.drive(

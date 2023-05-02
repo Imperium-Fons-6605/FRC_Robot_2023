@@ -37,9 +37,9 @@ public final class Constants {
     public static final double kMaxSpeedMetersPerSecond = 8;
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
-    public static final double kDirectionSlewRate = 0.9; // radians per second
-    public static final double kMagnitudeSlewRate = 1; // percent per second (1 = 100%)
-    public static final double kRotationalSlewRate = 1.3; // percent per second (1 = 100%)
+    public static final double kDirectionSlewRate = 1.5; // radians per second
+    public static final double kMagnitudeSlewRate = 3; // percent per second (1 = 100%)
+    public static final double kRotationalSlewRate = 1.6; // percent per second (1 = 100%)
 
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(25.8);
@@ -50,7 +50,15 @@ public final class Constants {
         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
+    );
+    
+    public static final Translation2d[] kModuleTranslations = {
+      new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+      new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+      new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+      new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
+    };
 
     // Angular offsets of the modules relative to the chassis in radians
     public static final double kFrontLeftChassisAngularOffset = -Math.PI / 2;
@@ -129,15 +137,15 @@ public final class Constants {
     public static final int kElevatorMasterCANId = 11;
     public static final int kElevatorSlaveCANId = 12;
 
-    public static final double kElevatorP = 1;
-    public static final double kElevatorI = 0;
-    public static final double kElevatorD = 0.005;
+    public static final double kElevatorP = 0.4;
+    public static final double kElevatorI = 0.0;
+    public static final double kElevatorD = 0.0;
 
-    public static final double kElevatorSVolts = 0.2;
+    public static final double kElevatorSVolts = 0.5;
     public static final double kElevatorGVolts = 0.36;
     public static final double kElevatorVVoltSecperCm = 0.1;
-    public static final double kMaxVelocityCmperSec = 50;
-    public static final double kMaxAcceleratioCmperSecSquared = 70;
+    public static final double kMaxVelocityCmperSec = 70;
+    public static final double kMaxAcceleratioCmperSecSquared = 100;
 
     public static final double kDirectionSlewRate = 1; //percent per second (1 = 100%)
 
@@ -147,14 +155,15 @@ public final class Constants {
      / kElevatorMotorReduction; //cm
     public static final double kEncoderVelocityFactor = kEncoderPositionFactor
      / 60; //cm per sec
-    public static final double kElevatorMaxHeight = 81;
-    public static final double kElevatorMinHeight = -12;   
+    public static final double kElevatorMaxHeightCm = 81;
+    public static final double kElevatorMinHeightCm = 0;  
+    public static final double kCarriageMassKg = 5;
   }
 
   public static final class ExtensorConstants{
     public static final int kExtensorCANId = 13;
 
-    public static final double kExtensorP = 1;
+    public static final double kExtensorP = 0.5;
     public static final double kExtensorI = 0;
     public static final double kExtensorD = 0;
 
@@ -174,7 +183,8 @@ public final class Constants {
      / 60; //cm per sec
 
     public static final double kExtensorMaxExtension = 37;
-    public static final double kExtensorMinExtension = -1; 
+    public static final double kExtensorMinExtension = -1;
+    public static final double kCarriageMassKg = 0.1;
   }
 
   public static final class ClawConstants{

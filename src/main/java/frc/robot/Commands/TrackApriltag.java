@@ -5,12 +5,16 @@ import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.estimator.KalmanFilter;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
@@ -18,9 +22,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Util.Constants.VisionConstants;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.SwerveDrive;
 
 public class TrackApriltag extends CommandBase{
+
     
     private final TrapezoidProfile.Constraints XConstraints = new Constraints(
         VisionConstants.kMaxXVelocity, 
@@ -50,7 +55,7 @@ public class TrackApriltag extends CommandBase{
     private static final Transform3d[] goalPositions = {tagToDownGoal,tagToMidGoal,tagToUpperGoal};
 
     private final PhotonCamera m_camera;
-    private final DriveSubsystem m_driveSubsystem;
+    private final SwerveDrive m_driveSubsystem;
     private final Supplier<Pose2d> m_robotPoserProvider;
     private int tagToChase = 1;
     private int m_GoalToChase = 1;
@@ -140,8 +145,6 @@ public class TrackApriltag extends CommandBase{
                 SmartDashboard.putNumber("goal Y", goalPose.getY());
                 SmartDashboard.putNumber("goal Omega", goalPose.getRotation().getRadians());
                 */
-                
-
                 xController.setGoal(goalPose.getX());
                 yController.setGoal(goalPose.getY());
                 omegaController.setGoal(goalPose.getRotation().getRadians());
@@ -188,4 +191,5 @@ public class TrackApriltag extends CommandBase{
         }
         return false;
     }
+
 }

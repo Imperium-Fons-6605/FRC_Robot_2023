@@ -14,9 +14,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.lang.invoke.VolatileCallSite;
@@ -26,6 +31,7 @@ import org.photonvision.EstimatedRobotPose;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.Pigeon2Configuration;
+import com.ctre.phoenix.unmanaged.Unmanaged;
 
 import frc.robot.RobotContainer;
 import frc.robot.Util.SwerveUtils;
@@ -34,7 +40,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class DriveSubsystem extends SubsystemBase {
+public class SwerveDrive extends SubsystemBase {
   // Create MAXSwerveModules
   private final MAXSwerveModule m_frontLeft;
   private final MAXSwerveModule m_frontRight;
@@ -43,16 +49,14 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final MAXSwerveModule[] SwerveModules;
 
-
-  
+  //Simulation and Telemetry
+  private double m_simYaw;
 
   // The gyro sensor
   private final Pigeon2 pigeonGyro = new Pigeon2(DriveConstants.kPigeonGyroID);
-  private final SwerveDrivePoseEstimator m_poseEstimator;
-  boolean turning_first_flag = false;
-  boolean turning_second_flag = false;
-  boolean turning_third_flag = false;
 
+  //Odometer
+  private final SwerveDrivePoseEstimator m_poseEstimator;
 
   // Slew rate filter variables for controlling lateral acceleration
   private double m_currentRotation = 0.0;
@@ -63,6 +67,7 @@ public class DriveSubsystem extends SubsystemBase {
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
+  //Voltage control variables
   PowerDistribution m_powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   private double VoltagePot;
@@ -70,10 +75,8 @@ public class DriveSubsystem extends SubsystemBase {
   private LinearFilter voltageFilter = LinearFilter.singlePoleIIR(2, 0.02);
   double tmpVoltagePot;
 
-  // Odometry class for tracking robot pose
 
-  /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {
+  public SwerveDrive() {
     m_frontLeft = new MAXSwerveModule(
       DriveConstants.kFrontLeftDrivingCanId,
       DriveConstants.kFrontLeftTurningCanId,
@@ -105,7 +108,6 @@ public class DriveSubsystem extends SubsystemBase {
         m_rearRight.getPosition()
       },
       new Pose2d());
-
     SmartDashboard.putData("Zero heading", new InstantCommand(() -> zeroHeading()));
 
 
@@ -121,11 +123,16 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    VoltagePot = ((m_powerDistribution.getVoltage() - 8)/(11.5-8));
+    if(RobotBase.isReal()){
+      VoltagePot = ((m_powerDistribution.getVoltage() - 8)/(11.5-8));
+    } else{
+      VoltagePot = ((RoboRioSim.getVInVoltage() - 8)/(11.5-8));
+    }
+
     SmartDashboard.putNumber("Position X",getPose().getX());
     SmartDashboard.putNumber("Position Y",getPose().getY());
     SmartDashboard.putNumber("Position Rotation",getPose().getRotation().getRadians());
-    SmartDashboard.putNumber("Gyro Yaw",getHeading());
+    SmartDashboard.putNumber("Gyro Yaw",getHeadingDegrees());
     SmartDashboard.putNumber("Gyro Pitch", pigeonGyro.getPitch());
     // Update the odometry in the periodic block
     updateOdometry();
@@ -156,6 +163,9 @@ public class DriveSubsystem extends SubsystemBase {
     */
 }
 
+public double getBatteryVoltage(){
+  return m_powerDistribution.getVoltage();
+}
   /**
    * Method for reducing velocity depending on current voltage power, 
    * with a minimum power of 20%
@@ -332,6 +342,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
   }
 
+  public MAXSwerveModule[] getModules(){
+    return SwerveModules;
+  }
+
   /**
    * Sets the swerve ModuleStates.
    *
@@ -344,6 +358,23 @@ public class DriveSubsystem extends SubsystemBase {
     m_frontRight.setDesiredState(desiredStates[1]);
     m_rearLeft.setDesiredState(desiredStates[2]);
     m_rearRight.setDesiredState(desiredStates[3]);
+  }
+
+  public SwerveModuleState[] getModuleStates() {
+    return new SwerveModuleState[] {
+      SwerveModules[0].getState(),
+      SwerveModules[1].getState(),
+      SwerveModules[2].getState(),
+      SwerveModules[3].getState()
+    };
+  }
+  public SwerveModulePosition[] getModulePositions() {
+    return new SwerveModulePosition[] { 
+      SwerveModules[0].getPosition(),
+      SwerveModules[1].getPosition(),
+      SwerveModules[2].getPosition(),
+      SwerveModules[3].getPosition()
+    };
   }
 
   /** Resets the drive encoders to currently read a position of 0. */
@@ -362,12 +393,16 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Returns the heading of the robot.
+   * Returns the current state of the module.
    *
-   * @return the robot's heading in degrees, from -180 to 180
+   * @return The current state of the module.
    */
-  public double getHeading() {
-    return Rotation2d.fromDegrees(pigeonGyro.getYaw()).getDegrees();
+  public double getHeadingDegrees() {
+    return Math.IEEEremainder(pigeonGyro.getYaw(), 360);
+  }
+
+  public Rotation2d getHeadingRotation2d() {
+    return Rotation2d.fromDegrees(getHeadingDegrees());
   }
 
   /**
@@ -379,5 +414,14 @@ public class DriveSubsystem extends SubsystemBase {
     double[] degreesPerSecond = new double[] {0.0,0.0,0.0};
     pigeonGyro.getRawGyro(degreesPerSecond);
     return  degreesPerSecond[2]* (DriveConstants.kGyroReversed ? -1.0 : 1.0);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    ChassisSpeeds chassisSpeed = DriveConstants.kDriveKinematics.toChassisSpeeds(getModuleStates());
+    m_simYaw += chassisSpeed.omegaRadiansPerSecond * 0.02;
+
+    Unmanaged.feedEnable(20);
+    pigeonGyro.getSimCollection().setRawHeading(-Units.radiansToDegrees(m_simYaw));
   }
 }

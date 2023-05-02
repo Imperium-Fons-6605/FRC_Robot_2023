@@ -1,7 +1,14 @@
 
 package frc.robot;
 
+import org.opencv.core.Mat;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.simulation.GenericHIDSim;
+import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Commands.Autos;
@@ -13,8 +20,10 @@ import frc.robot.Commands.TurnToAngle;
 import frc.robot.Util.Constants.AutoConstants;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.Util.Constants.OIConstants;
+import frc.robot.simulation.FieldSim;
+import frc.robot.simulation.MechanismSim;
 import frc.robot.subsystems.ClawSubsystem;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ExtensorSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -32,11 +41,13 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
   //Subsystems
-  public static final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  public static final SwerveDrive m_driveSubsystem = new SwerveDrive();
   public static final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
   public static final ExtensorSubsystem m_extensorSubsystem = new ExtensorSubsystem();
   public static final ClawSubsystem m_clawSubsystem = new ClawSubsystem();
   public static final VisionSubsystem m_visionSubsystem = new VisionSubsystem();
+  public static final FieldSim m_field = new FieldSim(m_driveSubsystem);
+  public static final MechanismSim m_mechSim = new MechanismSim(m_elevatorSubsystem, m_extensorSubsystem, m_clawSubsystem);
 
   //Comands
   public static final Autos m_autosFactory = new Autos();
@@ -46,9 +57,11 @@ public class RobotContainer {
   private TrackApriltag m_trackApriltagCommand = new TrackApriltag();
   //Joysticks
   public static final CommandXboxController m_XboxCommandsController = new CommandXboxController(OIConstants.kCommandsControllerPort);
+  public static final CommandXboxController m_SimDriveController = new CommandXboxController(OIConstants.kDriverControllerPort);
   public static final CommandPS4Controller m_PS4DriverController = new CommandPS4Controller(OIConstants.kDriverControllerPort);
 
   public RobotContainer() {
+    
     AutoConstants.kEventMap.put("GoDown", new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(0))));
     AutoConstants.kEventMap.put("GoUp", new InstantCommand(() -> m_elevatorSubsystem.setLevel(2)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(2))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(2))));
     AutoConstants.kEventMap.put("PutCargo", new InstantCommand(() -> m_clawSubsystem.putCargo()));
@@ -72,47 +85,79 @@ public class RobotContainer {
     SmartDashboard.putData("Position Chooser", m_positionChooser);
     SmartDashboard.putData("Balance?", m_onBalanceChooser);
     SmartDashboard.putData("Trayectory?", m_onTrayectoryChooser);
+    m_field.initSim();
     configureButtonBindings();
   }
 
  
   private void configureButtonBindings() {
+    if (Robot.isSimulation()){
+      //Driver bindings
+      m_driveSubsystem.setDefaultCommand(
+        new RunCommand(
+            () -> m_driveSubsystem.drive(
+                MathUtil.applyDeadband(squareJoystickInput(m_SimDriveController.getLeftX()) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(squareJoystickInput(m_SimDriveController.getLeftY()) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+                MathUtil.applyDeadband(squareJoystickInput(m_SimDriveController.getRightX()) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+                true, true), m_driveSubsystem));
+      
+      m_SimDriveController.x().onTrue(new InstantCommand(() -> m_driveSubsystem.zeroHeading()));
+      m_SimDriveController.rightBumper().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(true)));
+      m_SimDriveController.leftBumper().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(false)));
+      m_SimDriveController.povUp().onTrue(new TurnToAngle(0));
+      m_SimDriveController.povLeft().onTrue(new TurnToAngle(90));
+      m_SimDriveController.povDown().onTrue(new TurnToAngle(180));
+      m_SimDriveController.povRight().onTrue(new TurnToAngle(-90));
+    } else {
+      m_driveSubsystem.setDefaultCommand(
+        new RunCommand(
+            () -> m_driveSubsystem.drive(
+                -MathUtil.applyDeadband(squareJoystickInput(m_PS4DriverController.getLeftY()) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(squareJoystickInput(m_PS4DriverController.getLeftX()) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(squareJoystickInput(m_PS4DriverController.getRightX()) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+                true, false), m_driveSubsystem));
 
-    //Driver bindings
-    m_driveSubsystem.setDefaultCommand(
+      m_PS4DriverController.triangle()
+      .whileTrue(new RunCommand(
+          () -> m_driveSubsystem.setX(),
+          m_driveSubsystem));
+      m_PS4DriverController.square().onTrue(new InstantCommand(() -> m_driveSubsystem.zeroHeading()));
+      m_PS4DriverController.R1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(true)));
+      m_PS4DriverController.L1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(false)));
+      m_PS4DriverController.povLeft().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(2)));
+      m_PS4DriverController.povDown().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(1)));
+      m_PS4DriverController.povRight().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(0)));
+      m_PS4DriverController.R2().whileTrue(m_trackApriltagCommand);
+      m_PS4DriverController.povUp().onTrue(new TurnToAngle(0));
+      m_PS4DriverController.povLeft().onTrue(new TurnToAngle(90));
+      m_PS4DriverController.povDown().onTrue(new TurnToAngle(180));
+      m_PS4DriverController.povRight().onTrue(new TurnToAngle(-90));
+    }
+
+      //Commands bindings
+      m_XboxCommandsController.a().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(0))));
+      m_XboxCommandsController.b().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(1)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(1))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(1))));
+      m_XboxCommandsController.y().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(2)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(2))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(2))));
+      m_XboxCommandsController.x().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(3)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(3))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(3))));
+      m_XboxCommandsController.rightStick().onTrue(new InstantCommand(() -> m_clawSubsystem.setLevel(4))); 
+      m_XboxCommandsController.rightBumper().onTrue(new InstantCommand(() -> setCargoIsCube(false)));
+      m_XboxCommandsController.leftBumper().onTrue(new InstantCommand(() -> setCargoIsCube(true)));
+      m_XboxCommandsController.leftTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.grabCargo()));
+      m_XboxCommandsController.rightTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.putCargo()));
+      m_XboxCommandsController.leftTrigger().or(m_XboxCommandsController.rightTrigger()).onFalse(new InstantCommand(() -> m_clawSubsystem.stopClaw()));
+
+    //} else{
+      /*
+      GenericHID m_GenericHID = new GenericHID(0);
+      m_driveSubsystem.setDefaultCommand(
       new RunCommand(
           () -> m_driveSubsystem.drive(
-              -MathUtil.applyDeadband(m_PS4DriverController.getLeftY() * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
-              -MathUtil.applyDeadband(m_PS4DriverController.getLeftX() * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
-              -MathUtil.applyDeadband(m_PS4DriverController.getRightX() * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+              -MathUtil.applyDeadband(m_GenericHID.getRawAxis(1) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+              -MathUtil.applyDeadband(m_GenericHID.getRawAxis(0) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
+              -MathUtil.applyDeadband(m_GenericHID.getRawAxis(2) * m_driveSubsystem.getVoltagePot(), OIConstants.kDriveDeadband),
               true, true), m_driveSubsystem));
-    m_PS4DriverController.triangle()
-    .whileTrue(new RunCommand(
-        () -> m_driveSubsystem.setX(),
-        m_driveSubsystem));
-    m_PS4DriverController.square().onTrue(new InstantCommand(() -> m_driveSubsystem.zeroHeading()));
-    m_PS4DriverController.R1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(true)));
-    m_PS4DriverController.L1().onTrue(new InstantCommand(() -> m_driveSubsystem.reductVelocity(false)));
-    m_PS4DriverController.povLeft().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(2)));
-    m_PS4DriverController.povDown().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(1)));
-    m_PS4DriverController.povRight().onTrue(new InstantCommand(()-> m_trackApriltagCommand.setGoalToChase(0)));
-    m_PS4DriverController.R2().whileTrue(m_trackApriltagCommand);
-    m_PS4DriverController.povUp().onTrue(new TurnToAngle(0));
-    m_PS4DriverController.povLeft().onTrue(new TurnToAngle(90));
-    m_PS4DriverController.povDown().onTrue(new TurnToAngle(180));
-    m_PS4DriverController.povRight().onTrue(new TurnToAngle(-90));
-
-    //Commands bindings
-    m_XboxCommandsController.a().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(0)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(0))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(0))));
-    m_XboxCommandsController.b().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(1)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(1))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(1))));
-    m_XboxCommandsController.y().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(2)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(2))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(2))));
-    m_XboxCommandsController.x().onTrue(new InstantCommand(() -> m_elevatorSubsystem.setLevel(3)).andThen(new InstantCommand(() -> m_extensorSubsystem.setExtension(3))).andThen(new InstantCommand(() -> m_clawSubsystem.setLevel(3))));
-    m_XboxCommandsController.rightStick().onTrue(new InstantCommand(() -> m_clawSubsystem.setLevel(4))); 
-    m_XboxCommandsController.rightBumper().onTrue(new InstantCommand(() -> setCargoIsCube(false)));
-    m_XboxCommandsController.leftBumper().onTrue(new InstantCommand(() -> setCargoIsCube(true)));
-    m_XboxCommandsController.leftTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.grabCargo()));
-    m_XboxCommandsController.rightTrigger().whileTrue(new InstantCommand(() -> m_clawSubsystem.putCargo()));
-    m_XboxCommandsController.leftTrigger().or(m_XboxCommandsController.rightTrigger()).onFalse(new InstantCommand(() -> m_clawSubsystem.stopClaw()));
+      */
+    //}
   }
 
 
@@ -124,5 +169,19 @@ public class RobotContainer {
     m_elevatorSubsystem.setIsCargoCube(pIsCube);
     m_clawSubsystem.setIsCargoCube(pIsCube);
     m_extensorSubsystem.setIsCargoCube(pIsCube);
+  }
+
+  public double squareJoystickInput(double input){
+    return Math.copySign((input*input), input);
+  }
+
+  public void periodic(){
+    m_field.periodic();
+    m_mechSim.periodic();
+  }
+
+  public void simulationPeriodic(){
+    m_mechSim.simulationPeriodic();
+    SmartDashboard.putNumber("Joystick Y", m_PS4DriverController.getLeftY());
   }
 }
