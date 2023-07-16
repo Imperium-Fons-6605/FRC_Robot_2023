@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 
 import com.revrobotics.CANSparkMax;
@@ -43,6 +44,8 @@ public class MAXSwerveModule extends SubsystemBase{
   private double m_simTurnAngleIncrement;
   private double m_simAngleDifference;
   private double m_angle;
+  private double turning_can_id;
+  private double driving_can_id;
 
   /**
    * Constructs a MAXSwerveModule and configures the driving and turning motor,
@@ -53,6 +56,8 @@ public class MAXSwerveModule extends SubsystemBase{
   public MAXSwerveModule(int drivingCANId, int turningCANId, double chassisAngularOffset) {
     m_drivingSparkMax = new CANSparkMax(drivingCANId, MotorType.kBrushless);
     m_turningSparkMax = new CANSparkMax(turningCANId, MotorType.kBrushless);
+    turning_can_id = turningCANId;
+    driving_can_id = drivingCANId;
 
     // Factory reset, so we get the SPARKS MAX to a known state before configuring
     // them. This is useful in case a SPARK MAX is swapped out.
@@ -226,6 +231,8 @@ public class MAXSwerveModule extends SubsystemBase{
     // Command driving and turning SPARKS MAX towards their respective setpoints.
     m_drivingPIDController.setReference(optimizedDesiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
     m_turningPIDController.setReference(optimizedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
+    SmartDashboard.putNumber(m_drivingSparkMax.getDeviceId() + " angle", optimizedDesiredState.angle.getRadians());
+    SmartDashboard.putNumber(m_drivingSparkMax.getDeviceId() + " speed", optimizedDesiredState.speedMetersPerSecond);
 
     m_desiredState = correctedDesiredState;
     m_angle = (Math.abs(desiredState.speedMetersPerSecond) <= (DriveConstants.kMaxSpeedMetersPerSecond * 0.01))
@@ -244,7 +251,7 @@ public class MAXSwerveModule extends SubsystemBase{
 
   private void simUpdateDrivePosition(SwerveModuleState state) {
     m_simDriveEncoderVelocity = state.speedMetersPerSecond;
-    double distancePer20Ms = m_simDriveEncoderVelocity / 60.0;
+    double distancePer20Ms = m_simDriveEncoderVelocity / 99.0;
 
     m_simDriveEncoderPosition += distancePer20Ms;
   }
