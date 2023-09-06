@@ -97,6 +97,7 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
     protected double getMeasurement() {
         return m_encoder.getPosition();
     }
+
     public double getPosition(){
         return m_encoder.getPosition();
     }
@@ -124,6 +125,7 @@ public class ElevatorSubsystem extends ProfiledPIDSubsystem{
             enable();
         }
     }
+    
      @Override
      public void periodic() {
         super.periodic();
